@@ -1,0 +1,339 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Soft, calming maternal palette */
+    --background: 30 50% 98%;
+    --foreground: 25 30% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 25 30% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 30% 20%;
+
+    /* Soft Peach - Primary */
+    --primary: 15 100% 90%;
+    --primary-foreground: 15 60% 30%;
+    --primary-dark: 15 80% 75%;
+
+    /* Mint Green - Success/Health */
+    --secondary: 150 50% 92%;
+    --secondary-foreground: 150 40% 30%;
+    --secondary-dark: 150 45% 75%;
+
+    /* Sky Blue - Info/Calm */
+    --accent: 200 80% 92%;
+    --accent-foreground: 200 50% 30%;
+    --accent-dark: 200 60% 75%;
+
+    /* Lavender - Gentle accent */
+    --lavender: 270 50% 93%;
+    --lavender-foreground: 270 40% 35%;
+
+    /* Warm Rose - Emergency/Important */
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-soft: 0 60% 92%;
+
+    --muted: 30 20% 94%;
+    --muted-foreground: 25 15% 50%;
+
+    --border: 30 30% 90%;
+    --input: 30 30% 90%;
+    --ring: 15 80% 75%;
+
+    --radius: 1rem;
+
+    /* Custom gradients */
+    --gradient-peach: linear-gradient(135deg, hsl(15 100% 92%) 0%, hsl(30 100% 94%) 100%);
+    --gradient-mint: linear-gradient(135deg, hsl(150 50% 92%) 0%, hsl(170 50% 94%) 100%);
+    --gradient-sky: linear-gradient(135deg, hsl(200 80% 92%) 0%, hsl(210 70% 94%) 100%);
+    --gradient-warm: linear-gradient(135deg, hsl(15 100% 95%) 0%, hsl(200 60% 95%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(15 100% 96%) 0%, hsl(30 50% 98%) 100%);
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(15 50% 50% / 0.1);
+    --shadow-card: 0 8px 30px -8px hsl(15 50% 50% / 0.12);
+    --shadow-elevated: 0 12px 40px -10px hsl(15 50% 50% / 0.15);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 25 20% 10%;
+    --foreground: 30 20% 95%;
+
+    --card: 25 20% 14%;
+    --card-foreground: 30 20% 95%;
+
+    --popover: 25 20% 14%;
+    --popover-foreground: 30 20% 95%;
+
+    --primary: 15 70% 70%;
+    --primary-foreground: 15 30% 10%;
+    --primary-dark: 15 60% 50%;
+
+    --secondary: 150 30% 25%;
+    --secondary-foreground: 150 40% 90%;
+
+    --accent: 200 40% 25%;
+    --accent-foreground: 200 50% 90%;
+
+    --lavender: 270 30% 25%;
+    --lavender-foreground: 270 40% 90%;
+
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --muted: 25 15% 20%;
+    --muted-foreground: 25 15% 60%;
+
+    --border: 25 15% 25%;
+    --input: 25 15% 25%;
+    --ring: 15 60% 60%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Nunito', sans-serif;
+  }
+}
+
+@layer components {
+  .card-soft {
+    @apply bg-card rounded-2xl shadow-[var(--shadow-card)] border-0;
+  }
+
+  .card-peach {
+    background: var(--gradient-peach);
+    @apply rounded-2xl shadow-[var(--shadow-soft)];
+  }
+
+  .card-mint {
+    background: var(--gradient-mint);
+    @apply rounded-2xl shadow-[var(--shadow-soft)];
+  }
+
+  .card-sky {
+    background: var(--gradient-sky);
+    @apply rounded-2xl shadow-[var(--shadow-soft)];
+  }
+
+  .btn-primary-soft {
+    @apply bg-primary text-primary-foreground hover:bg-primary-dark transition-all duration-300 rounded-xl font-semibold shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-card)];
+  }
+
+  .btn-emergency {
+    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-all duration-300 rounded-xl font-bold shadow-lg border-2 border-white/20;
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-lg rounded-2xl shadow-[var(--shadow-card)] border border-white/50;
+  }
+
+  .nav-item-active {
+    @apply bg-primary text-primary-foreground;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-gentle {
+    animation: pulse-gentle 2s ease-in-out infinite;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.3s ease-out;
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-gentle {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Professional Print Styles for Medical Reports */
+@media print {
+  @page {
+    size: A4;
+    margin: 2cm;
+  }
+
+  body {
+    background: white !important;
+    font-size: 12pt;
+    color: black !important;
+  }
+
+  /* Hide UI elements that shouldn't be in a report */
+  nav, 
+  aside, 
+  header, 
+  footer,
+  button,
+  .no-print,
+  [role="tablist"],
+  .fixed,
+  .sticky {
+    display: none !important;
+  }
+
+  /* Ensure the report container takes full width */
+  .max-w-7xl,
+  .max-w-4xl,
+  main {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  /* Reveal hidden content for printing if necessary */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Card and Chart Adjustments */
+  .card, 
+  .rounded-2xl {
+    border: 1px solid #eee !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  .shadow-soft, 
+  .shadow-card, 
+  .shadow-elevated {
+    box-shadow: none !important;
+  }
+
+  /* Recharts svg should take full width */
+  .recharts-responsive-container {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 400px;
+  }
+
+  /* Text color adjustments for readability */
+  .text-muted-foreground {
+    color: #666 !important;
+  }
+
+  .text-primary {
+    color: #000 !important;
+  }
+
+  .bg-primary {
+    background-color: #fce4ec !important; /* Soft pink background for headers */
+    -webkit-print-color-adjust: exact;
+  }
+
+  .bg-mint-50, .bg-sky-50, .bg-lavender-50 {
+    background-color: white !important;
+    border: 1px solid #eee !important;
+  }
+}

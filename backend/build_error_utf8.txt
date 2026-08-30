@@ -1,0 +1,16 @@
+﻿
+> aal-is-well-backend@1.0.0 build
+> tsc
+
+src/middleware/auth.ts(45,5): error TS6133: 'res' is declared but its value is never read.
+src/middleware/errorHandler.ts(18,5): error TS6133: 'req' is declared but its value is never read.
+src/middleware/errorHandler.ts(20,5): error TS6133: 'next' is declared but its value is never read.
+src/routes/callRoutes.ts(7,27): error TS7030: Not all code paths return a value.
+src/routes/groq.routes.ts(5,24): error TS6133: 'AuthRequest' is declared but its value is never read.
+src/routes/user.routes.ts(202,30): error TS2304: Cannot find name 'type'.
+src/routes/user.routes.ts(202,55): error TS2304: Cannot find name 'type'.
+src/routes/user.routes.ts(207,17): error TS2304: Cannot find name 'type'.
+src/routes/user.routes.ts(208,22): error TS2304: Cannot find name 'type'.
+src/routes/user.routes.ts(217,35): error TS2339: Property 'babyMessage' does not exist on type 'Document<unknown, {}, ISchedule, {}, DefaultSchemaOptions> & ISchedule & Required<{ _id: ObjectId; }> & { ...; } & { ...; }'.
+src/services/scheduler.ts(1,18): error TS2307: Cannot find module 'node-cron' or its corresponding type declarations.
+src/utils/cron.ts(29,39): error TS2339: Property 'babyMessage' does not exist on type 'Document<unknown, {}, ISchedule, {}, DefaultSchemaOptions> & ISchedule & Required<{ _id: ObjectId; }> & { ...; } & { ...; }'.

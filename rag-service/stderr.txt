@@ -1,0 +1,15 @@
+INFO:     Started server process [2188]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 693, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+               ~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\HP\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 214, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Desktop\New folder (2)\HM035_HackMatrix\rag-service\main.py", line 28, in lifespan
+    model = SentenceTransformer(MODEL_NAME)
+                                ^^^^^^^^^^
+NameError: name 'MODEL_NAME' is not defined
+
+ERROR:    Application startup failed. Exiting.
