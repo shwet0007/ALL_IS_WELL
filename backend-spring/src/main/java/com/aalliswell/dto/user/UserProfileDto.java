@@ -7,7 +7,6 @@ import com.aalliswell.entity.Lifestyle;
 import com.aalliswell.entity.MedicalCondition;
 import com.aalliswell.entity.PregnancyProfile;
 import com.aalliswell.entity.User;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +20,6 @@ import lombok.Setter;
 public class UserProfileDto {
     private Long id;
     private String uid;
-
-    @JsonProperty("firebase_uid")
-    private String firebaseUid;
 
     private String name;
     private String email;
@@ -68,7 +64,6 @@ public class UserProfileDto {
         UserProfileDto dto = new UserProfileDto();
         dto.id = user.getId();
         dto.uid = String.valueOf(user.getId());
-        dto.firebaseUid = String.valueOf(user.getId());
         dto.name = user.getName();
         dto.email = user.getEmail();
         dto.role = user.getRole().name().toLowerCase();

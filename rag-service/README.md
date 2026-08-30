@@ -137,7 +137,7 @@ rag-service/
 
 ## 🔗 Integration
 
-This service is designed to be called by the backend Express server or directly from the frontend. Add the following to your backend `.env`:
+This service is designed to be called by the Spring Boot backend. Add the following to your backend environment:
 
 ```env
 RAG_SERVICE_URL=http://localhost:9000

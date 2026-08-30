@@ -6,7 +6,8 @@ import { Loader2, Stethoscope, Building2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Doctor {
-    firebase_uid: string;
+    id: string;
+    uid?: string;
     name: string;
     specialization?: string;
     clinicName?: string;
@@ -71,50 +72,53 @@ export default function DoctorList() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {doctors.map((doctor) => (
-                    <Card key={doctor.firebase_uid} className="hover:shadow-lg transition-shadow">
-                        <CardHeader className="pb-3">
-                            <div className="flex items-start justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <Stethoscope className="w-6 h-6 text-blue-600" />
-                                    </div>
-                                    <div>
-                                        <CardTitle className="text-lg">Dr. {doctor.name}</CardTitle>
-                                        {doctor.specialization && (
-                                            <p className="text-sm text-muted-foreground">{doctor.specialization}</p>
-                                        )}
+                {doctors.map((doctor) => {
+                    const doctorId = doctor.uid || String(doctor.id);
+                    return (
+                        <Card key={doctorId} className="hover:shadow-lg transition-shadow">
+                            <CardHeader className="pb-3">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <Stethoscope className="w-6 h-6 text-blue-600" />
+                                        </div>
+                                        <div>
+                                            <CardTitle className="text-lg">Dr. {doctor.name}</CardTitle>
+                                            {doctor.specialization && (
+                                                <p className="text-sm text-muted-foreground">{doctor.specialization}</p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            {doctor.clinicName && (
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                                    <Building2 className="w-4 h-4" />
-                                    <span>{doctor.clinicName}</span>
-                                </div>
-                            )}
-                            <Button
-                                onClick={() => handleRequestConnection(doctor.firebase_uid)}
-                                disabled={requestingId === doctor.firebase_uid}
-                                className="w-full"
-                            >
-                                {requestingId === doctor.firebase_uid ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Sending Request...
-                                    </>
-                                ) : (
-                                    <>
-                                        <CheckCircle2 className="w-4 h-4 mr-2" />
-                                        Request Connection
-                                    </>
+                            </CardHeader>
+                            <CardContent>
+                                {doctor.clinicName && (
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                                        <Building2 className="w-4 h-4" />
+                                        <span>{doctor.clinicName}</span>
+                                    </div>
                                 )}
-                            </Button>
-                        </CardContent>
-                    </Card>
-                ))}
+                                <Button
+                                    onClick={() => handleRequestConnection(doctorId)}
+                                    disabled={requestingId === doctorId}
+                                    className="w-full"
+                                >
+                                    {requestingId === doctorId ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Sending Request...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CheckCircle2 className="w-4 h-4 mr-2" />
+                                            Request Connection
+                                        </>
+                                    )}
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
             </div>
         </div>
     );

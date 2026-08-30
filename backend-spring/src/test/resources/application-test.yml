@@ -30,7 +30,7 @@ app:
     api-key:
     base-url: https://api.sarvam.ai
   rag:
-    service-url: http://localhost:8001
+    service-url: http://localhost:9000
   cry-analysis:
     service-url: http://localhost:8000
   twilio:

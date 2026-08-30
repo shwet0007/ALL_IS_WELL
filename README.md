@@ -1,111 +1,124 @@
-# 🏥 Aal is Well – Maternal & Infant Care Platform
+# Aal Is Well
 
-**Aal is Well** is a robust, full-stack platform designed to bridge the gap between parents and quality healthcare. It leverages AI, Machine Learning, and standard medical guidelines to provide a comprehensive companion for the journey from pregnancy to early childhood.
+Aal Is Well is a maternal and infant care platform for pregnancy tracking, infant routines, doctor connectivity, reminders, AI guidance, cry analysis, and emergency support.
 
-Aligning with **SDG-3: Good Health and Well-Being**, the platform focuses on maternal safety, infant health, and ethical AI-driven assistance.
+The repository now uses this primary architecture:
 
----
-
-## 🌟 Key Features
-
-### 🚀 Smart Dashboards
-- **Pregnancy Journey**: Weekly progress tracking, development visualization, and EDD calculation (based on LMP).
-- **Infant Care**: Dynamic switch to baby tracking after birth, age calculation in months, and tailored care modules.
-
-### 🤖 AI & Machine Learning
-- **AI Health Assistant**: Multilingual chatbot (English, Hindi, Marathi, Gujarati) powered by **Groq LLM** for health queries.
-- **Cry Analysis**: Python-based ML module that analyzes baby cries to detect hunger, fatigue, or pain.
-- **RAG Service**: Knowledge-based retrieval for specialized maternal and infant care advice.
-
-### 📅 Medical & Care Tracking
-- **Vaccination Management**: Automated schedules based on birth date (BCG, Polio, DPT, MMR, etc.).
-- **Routine Scheduling**: Track feeding, sleep cycles, and medication.
-- **Digital Diary**: Store baby moments, mood tracking, and medical observations.
-
-### 📞 Safety & Connectivity
-- **Doctor Portal**: Dedicated access for medical professionals to monitor progress and leave notes.
-- **Emergency SOS**: Instant alerts via **Twilio** (Calls/SMS) to family and hospitals.
-
----
-
-## 🛠️ Technical Architecture
-
-### **Technology Stack**
-- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui.
-- **Backend**: Node.js, Express, TypeScript, Mongoose.
-- **Database**: MongoDB Atlas (Primary), Firebase (Auth & Storage).
-- **ML/AI Services**: Python, Groq LLM, LangChain, Librosa (Audio Processing).
-- **Communication**: Twilio API.
-
-### **Project Structure**
 ```text
-HM035_HackMatrix/
-├── frontend/             # React/Vite Frontend
-├── backend/              # Node.js/Express API Server
-├── cry-analysis/         # Python ML Module (Cry classification)
-├── rag-service/          # Knowledge retrieval service
-└── experiments/          # Research & Prototyping
+React + TypeScript
+  -> Spring Boot + Spring Security + JWT
+  -> MySQL + Spring Data JPA/Hibernate
+  -> Python RAG service and Python cry-analysis service
 ```
 
----
+Firebase is kept only for client SDK features that still need it, such as Storage and Cloud Messaging/device tokens. Application login is handled by Spring Boot JWT endpoints.
 
-## 🚀 Getting Started
+## Features
 
-### 📋 Prerequisites
-- Node.js (v18+)
-- Python 3.9+
-- MongoDB Atlas Account
-- Firebase Project (Service Account JSON)
+- Parent dashboards for pregnancy and infant care.
+- Spring Security registration and login with JWT bearer tokens.
+- MySQL-backed profiles, baby details, pregnancy details, schedules, reminders, notifications, diary entries, medical reports, doctor requests, checkups, analytics, and marketplace data.
+- Doctor portal for patient connection requests, reports, notes, and checkup scheduling.
+- Groq and Sarvam integrations through the Spring Boot backend.
+- Python RAG and cry-analysis services called by Spring Boot over HTTP.
+- Twilio emergency call integration.
 
-### 📥 Installation
+## Project Structure
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/JayPaunikar/HM035_HackMatrix.git
-   cd HM035_HackMatrix
-   ```
+```text
+HM035_HackMatrix-main/
+├── frontend/          # React/Vite application
+├── backend-spring/    # Primary Spring Boot API
+├── rag-service/       # Python FastAPI RAG service
+├── cry-analysis/      # Python infant cry-analysis service
+├── experiments/       # Research and prototypes
+├── .env.example       # Root environment template
+└── start-dev.ps1      # Local frontend + Spring backend helper
+```
 
-2. **Frontend Setup**
-   ```bash
-   cd frontend
-   npm install
-   # Create .env with VITE_API_URL, VITE_GROQ_API_KEY, etc.
-   ```
+## Prerequisites
 
-3. **Backend Setup**
-   ```bash
-   cd ../backend
-   npm install
-   # Create .env with MONGODB_URI, FIREBASE_SERVICE_ACCOUNT_PATH, etc.
-   ```
+- Java 17+
+- Maven
+- npm for the React frontend
+- Python 3.9+ for the AI services
+- MySQL
 
-4. **Service Setup (Cry Analysis / RAG)**
-   ```bash
-   cd ../cry-analysis # or rag-service
-   pip install -r requirements.txt
-   ```
+## Environment
 
-### 🏃 Running Locally
+Copy `.env.example` values into your local shell or service configuration. The Spring backend expects MySQL and JWT values such as:
 
-You can use the PowerShell helper script for a unified start:
+```env
+DB_URL=jdbc:mysql://localhost:3306/aal_is_well?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+DB_USERNAME=root
+DB_PASSWORD=
+JWT_SECRET=replace-with-at-least-32-random-characters
+VITE_API_URL=http://localhost:3001
+```
+
+Set `GROQ_API_KEY`, `SARVAM_API_KEY`, `TWILIO_*`, and `FCM_SERVER_KEY` only for features you run locally.
+
+The frontend also has `frontend/.env.example` for Vite and Firebase client SDK values used by Storage/Cloud Messaging.
+
+## Run Locally
+
+Use the helper script on Windows/PowerShell:
+
 ```powershell
 .\start-dev.ps1
 ```
 
-Or start manually:
-- **Backend**: `cd backend && npm run dev`
-- **Frontend**: `cd frontend && npm run dev`
+Or start services manually:
 
----
+```bash
+cd backend-spring
+mvn spring-boot:run
+```
 
-## 👨‍💻 Team Jhatpat
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-- **Jay Paunikar** ([GitHub](https://github.com/JayPaunikar))
-- **Srushti Rokade** ([GitHub](https://github.com/ssrok))
-- **Nikita Kapse** ([GitHub](https://github.com/Nikita-Kapse))
-- **Raj Kakade** ([GitHub](https://github.com/kakaderaj23))
+Python services remain independent:
 
----
+```bash
+cd rag-service
+pip install -r requirements.txt
+python main.py
+```
 
-## 💙 Final Note
-*Aal is Well is not just an application — it is a trusted digital companion that supports parents with clarity, confidence, and care during one of the most important phases of life.*
+```bash
+cd cry-analysis
+pip install -r requirements.txt
+python main.py
+```
+
+## Authentication
+
+- Register: `POST /api/auth/register`
+- Login: `POST /api/auth/login`
+- Protected requests: `Authorization: Bearer <JWT>`
+- Frontend token storage key: `aal_access_token`
+
+## Verification
+
+Run the main checks before handing off changes:
+
+```bash
+cd backend-spring
+mvn test
+```
+
+```bash
+cd frontend
+npm run build
+```
+
+## Team Jhatpat
+
+- Jay Paunikar
+- Srushti Rokade
+- Nikita Kapse
+- Raj Kakade

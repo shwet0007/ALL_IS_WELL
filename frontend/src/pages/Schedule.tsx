@@ -134,7 +134,7 @@ export default function Schedule() {
         try {
             const generatedItems = await generatePersonalizedSchedule(userProfile);
 
-            // Add generated items to Firestore
+            // Add generated items through the Spring API layer.
             const savedItems: ScheduleItem[] = [];
             for (const item of generatedItems) {
                 const savedItem = await addScheduleItem(currentUser.uid, {

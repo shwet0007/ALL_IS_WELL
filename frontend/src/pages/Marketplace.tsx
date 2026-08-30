@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Product {
-    _id: string;
+    id: string;
     name: string;
     description: string;
     imageUrl: string;
@@ -124,7 +124,7 @@ const Marketplace: React.FC = () => {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                         {products.map((product) => (
                                             <Card
-                                                key={product._id}
+                                                key={product.id}
                                                 className={`overflow-hidden transition-all duration-300 hover:shadow-lg group ${product.isSponsored ? 'border-amber-200 ring-1 ring-amber-100 bg-amber-50/30' : 'hover:border-primary/50'}`}
                                             >
                                                 <div className="relative aspect-square overflow-hidden bg-gray-100">

@@ -1,7 +1,7 @@
 // Sarvam AI API Service - SECURE VERSION (calls backend, not Sarvam directly)
 // Backend handles API keys securely
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/sarvam`;
+import { api } from './api';
 
 export interface SarvamSTTResponse {
     transcript: string;
@@ -24,22 +24,10 @@ export const speechToText = async (
         // Convert blob to base64
         const base64Audio = await blobToBase64(audioBlob);
 
-        const response = await fetch(`${API_BASE_URL}/speech-to-text`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                audioData: base64Audio,
-                language,
-            }),
+        const data: SarvamSTTResponse = await api.post('/sarvam/speech-to-text', {
+            audioData: base64Audio,
+            language,
         });
-
-        if (!response.ok) {
-            throw new Error(`Backend STT API error: ${response.statusText}`);
-        }
-
-        const data: SarvamSTTResponse = await response.json();
         return data.transcript;
     } catch (error) {
         console.error('Error in speech-to-text:', error);
@@ -61,27 +49,11 @@ export const textToSpeech = async (
     try {
         console.log('TTS Request:', { text, language, speaker });
 
-        const response = await fetch(`${API_BASE_URL}/text-to-speech`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                text,
-                language,
-                speaker,
-            }),
+        const data: SarvamTTSResponse = await api.post('/sarvam/text-to-speech', {
+            text,
+            language,
+            speaker,
         });
-
-        console.log('TTS Response Status:', response.status, response.statusText);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Backend TTS API error response:', errorText);
-            throw new Error(`Backend TTS API error (${response.status}): ${errorText}`);
-        }
-
-        const data: SarvamTTSResponse = await response.json();
         console.log('TTS Response Data received');
 
         return data.audio;

@@ -135,22 +135,16 @@ export const DietPlanContent: React.FC = () => {
   // Initialize diet sections with meal items
   const [dietSections, setDietSections] = useState<DietSection[]>(getDefaultSections());
 
-  // Load saved progress from Firestore
+  // Load saved progress through the Spring API layer.
   useEffect(() => {
     const loadDietPlan = async () => {
       try {
-        // Need user ID, but this component is wrapped. 
-        // Ideally we pass user ID or fetch current user here, 
-        // but for now let's use the layout auth context if possible 
-        // OR we assume DietPlanContent is child of something with Auth.
-        // Let's rely on onAuthStateChanged in db wrapper if needed, 
-        // but simpler: check localStorage for user or use auth hook inside content
+        // User identity comes from the JWT-backed auth context.
       } catch (e) { console.error(e) }
     };
   }, []);
-  // WAIT - I need to use useAuth() here.
 
-  const { currentUser, userProfile } = useAuth(); // Need to import useAuth
+  const { currentUser, userProfile } = useAuth();
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
@@ -216,7 +210,7 @@ export const DietPlanContent: React.FC = () => {
     }
   };
 
-  // Save progress to Firestore
+  // Save progress through the Spring API layer.
   useEffect(() => {
     const saveData = async () => {
       if (currentUser && dietSections.length > 0) {
@@ -244,9 +238,7 @@ export const DietPlanContent: React.FC = () => {
       }
     };
 
-    // Debounce save? Or simple effect. 
-    // Given React 18 strict mode, this might fire twice. 
-    // Firestore writes are cheap enough for this MVP.
+    // Debounce writes triggered by rapid checkbox changes.
     const timeoutId = setTimeout(() => {
       saveData();
     }, 1000); // 1s debounce to avoid rapid writes on every checkbox click

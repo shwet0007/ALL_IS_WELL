@@ -15,7 +15,6 @@ interface AuthApiResponse {
     user: UserProfile & {
         id?: number;
         uid?: string;
-        firebase_uid?: string;
     };
 }
 
@@ -92,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     function toCurrentUser(profile: AuthApiResponse['user'] | UserProfile): AppUser {
         const typedProfile = profile as AuthApiResponse['user'];
-        const id = typedProfile.uid || typedProfile.firebase_uid || String(typedProfile.id || '');
+        const id = typedProfile.uid || String(typedProfile.id || '');
         return {
             uid: id,
             email: profile.email || null,

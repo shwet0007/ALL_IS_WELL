@@ -37,7 +37,7 @@ app:
     api-key: ${SARVAM_API_KEY:}
     base-url: ${SARVAM_BASE_URL:https://api.sarvam.ai}
   rag:
-    service-url: ${RAG_SERVICE_URL:http://localhost:8001}
+    service-url: ${RAG_SERVICE_URL:http://localhost:9000}
   cry-analysis:
     service-url: ${CRY_ANALYSIS_SERVICE_URL:http://localhost:8000}
   twilio:

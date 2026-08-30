@@ -1,130 +1,148 @@
-# **AAL IS WELL – Maternal & Infant Care Platform**
+# AAL IS WELL - Project Details
 
-## **📌 Project Overview**
-**Aal is Well** is a comprehensive Maternal and Infant Care Platform designed to support parents from pregnancy through early childhood. It provides preventive care guidance, personalized reminders, health awareness, and secure doctor connectivity in a unified, trusted space.
+## Project Overview
 
-The platform is built with a focus on **SDG-3: Good Health and Well-Being**, specifically targeting maternal safety and infant health through ethical AI-driven assistance. It leverages AI, Machine Learning, and standard medical guidelines to provide a comprehensive companion for the journey from pregnancy to early childhood.
+Aal Is Well is a full-stack maternal and infant care platform focused on preventive care, personalized routines, secure doctor connectivity, AI assistance, and emergency support.
 
----
+The current repository uses Spring Boot as the only active application backend. React remains the frontend, MySQL is the application database, and Python services remain dedicated to RAG and cry analysis.
 
-## **🚀 Feature Breakdown**
+## Feature Breakdown
 
-### 1. Unified Parent Dashboard
-The application features a dynamic dashboard that adapts based on the user's role:
-- **Pregnancy Journey**: Tracks weekly progress, visualizes development with a progress bar, and calculates the Estimated Date of Delivery (EDD) based on the Last Menstrual Period (LMP).
-- **Infant Care**: Swaps to baby tracking after birth. It calculates the baby's age in months from the Date of Birth (DOB) and provides tailored care modules.
+### Unified Parent Dashboard
 
-### 2. AI & Machine Learning Integration
-- **AI Health Assistant**: A multilingual (English, Hindi, Marathi, Gujarati) chatbot powered by Groq LLM. It acts as a first point of contact for health queries and advice.
-- **Cry Analysis**: A sophisticated Python-based ML module that analyzes audio recordings of baby cries to help parents understand if the baby is hungry, tired, or in pain.
-- **Diet Planner**: Generates personalized weekly nutrition plans for mothers and age-appropriate food introduction schedules for infants.
-- **Baby-Style Emotional Reminders**: Loving, mother-baby bonding messages ("Mummaaa, time for my medicine!") to make care tasks feel more personal.
-- **RAG Service**: Retrieval Augmented Generation service for providing accurate medical knowledge and advice.
+- Pregnancy progress, trimester context, care guidance, and expected delivery context.
+- Infant care modules for feeding, sleep, vaccination, and daily health routines.
 
-### 3. Medical & Care Tracking
-- **Vaccination Management**: Automated schedule based on birth date, highlighting mandatory vaccines (BCG, Polio, DPT, MMR, etc.) and their due dates.
-- **Routine Scheduling**: Tracks daily tasks such as feeding sessions, sleep cycles, and medication.
-- **Medical Reports & Notes**: Secure storage for digital health records, test results, and doctor consultation notes.
-- **Daily One Step Ahead**: Informative daily health check-ins and guidance.
+### AI and ML Integration
 
-### 4. Professional Connectivity
-- **Doctor Portal / Patient-Doctor Rooms**: Dedicated space for medical professionals to monitor patient progress, view reports, and provide specialized care via secure consultation rooms.
+- Groq-backed maternal and infant health assistant through Spring Boot.
+- Sarvam speech-to-text and text-to-speech proxy endpoints through Spring Boot.
+- Python RAG service for knowledge retrieval.
+- Python cry-analysis service for infant audio classification.
 
-### 5. Safety & SOS System
-- **Emergency SOS**: A critical feature that initiates instant alerts.
-- **Automated Communication**: Integrated with Twilio for backup emergency calls and SMS to primary contacts and hospitals.
+### Medical and Care Tracking
 
----
+- Schedules, reminders, notifications, diary entries, daily tasks, daily checkups, checkups, vaccinations, and medical reports.
+- Spring Data JPA entities and repositories persist application data in MySQL.
 
-## **🛠️ Technology Stack**
+### Doctor Connectivity
 
-### **Frontend**
-- **Framework**: React 18 with Vite for high-performance builds.
-- **Language**: TypeScript for type safety.
-- **UI System**: 
-    - **Tailwind CSS**: For custom, responsive utility-first styling.
-    - **shadcn/ui**: For accessible, high-quality components (Dialogs, Tabs, Cards).
-    - **Lucide React**: For consistent, modern iconography.
-- **State Management**: React Hooks, Context API.
-- **Utilities**: `date-fns` for precise date/age calculations.
+- Doctor discovery.
+- Patient connection requests.
+- Connected patient lists.
+- Doctor notes and scheduled checkups.
 
-### **Backend**
-- **Runtime**: Node.js with Express.
-- **Language**: TypeScript for shared types between frontend and backend.
-- **Database**: MongoDB Atlas (via Mongoose) for robust document storage.
-- **Authentication**: Firebase Admin SDK for secure user management.
-- **Integrations**:
-    - **Twilio**: For telecommunication services (Emergency Calls).
-    - **Groq API / LangChain**: For large language model (LLM) orchestration.
-    - **Sarvam AI**: For multilingual/voice support.
+### Safety
 
-### **Specialized AI Services**
-- **Cry Analysis**: Python-based service (Flask/FastAPI) using `librosa` and `joblib` for audio processing and classification.
-- **RAG Service**: Python-based service for medical knowledge retrieval.
+- Emergency call flow through the Spring Boot Twilio integration.
+- Firebase Cloud Messaging can remain enabled for push notifications and device tokens.
 
----
+## Technology Stack
 
-## **📂 Directory Layout**
+### Frontend
+
+- React 18
+- Vite
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Lucide React
+
+### Backend
+
+- Java 17+
+- Spring Boot
+- Spring MVC
+- Spring Security
+- JWT authentication
+- BCrypt password hashing
+- Spring Data JPA
+- Hibernate
+- MySQL
+- WebClient integrations for Groq, Sarvam, RAG, and cry analysis
+- Twilio emergency calls
+
+### Specialized Services
+
+- `rag-service/`: Python FastAPI service for retrieval-augmented guidance.
+- `cry-analysis/`: Python ML service for infant cry analysis.
+
+## Directory Layout
 
 ```text
-HM035_HackMatrix/
-├── frontend/                # React Vite Frontend Application
-│   ├── src/
-│   │   ├── components/      # UI components (shadcn/ui, custom)
-│   │   ├── pages/           # Main application pages (Dashboard, Diary, Diet)
-│   │   ├── lib/             # Utilities (api, db, firebase)
-│   │   ├── utils/           # Helper functions (babyReminderMessages)
-│   │   └── contexts/        # React Contexts (AuthContext)
-│   └── package.json         # Frontend dependencies
-│
-├── backend/                 # Main Node.js/Express Backend
-│   ├── src/
-│   │   ├── models/          # Mongoose Schemas (User, Schedule, Checkup)
-│   │   ├── routes/          # API Route definitions
-│   │   ├── utils/           # Backend utilities (cron, reminder.util)
-│   │   ├── middleware/      # Auth & Error handling middleware
-│   │   ├── services/        # Service integrations (Groq, Scheduler, Notification)
-│   │   └── config/          # DB & Env configurations
-│   └── package.json         # Backend dependencies
-│
-├── cry-analysis/            # Python AI service for infant cry analysis
-│   ├── main.py              # Service entry point
-│   ├── model.joblib         # Trained machine learning model
-│   └── analyze_cry.py       # Analysis logic
-│
-├── rag-service/             # Retrieval Augmented Generation service
-│   ├── main.py              # Knowledge retrieval API
-│   └── data/                # Medical data for the knowledge base
-│
-├── server/                  # Alternative/Legacy Express Server
-├── start-dev.ps1            # PowerShell script to start full stack dev env
-└── README.md                # Project README & Setup Guide
+HM035_HackMatrix-main/
+├── frontend/                # React Vite frontend
+│   └── src/
+│       ├── components/
+│       ├── contexts/
+│       ├── lib/
+│       └── pages/
+├── backend-spring/          # Primary Spring Boot backend
+│   └── src/main/java/com/aalliswell/
+│       ├── config/
+│       ├── controller/
+│       ├── dto/
+│       ├── entity/
+│       ├── repository/
+│       ├── security/
+│       └── service/
+├── rag-service/             # Python RAG microservice
+├── cry-analysis/            # Python cry-analysis microservice
+├── experiments/             # Research and prototypes
+├── .env.example
+└── start-dev.ps1
 ```
 
----
+## Development Setup
 
-## **🚀 Development Setup**
+Required local tooling:
 
-### **Prerequisites**
-- Node.js & npm
-- Python (for Cry Analysis & RAG)
-- MongoDB Connection
-- Firebase Project (Service Account Key)
+- Java 17+
+- Maven
+- npm
+- Python 3.9+
+- MySQL
 
-### **Starting the Application**
-The easiest way to start both frontend and backend is using the provided script:
-```powershell
-.\start-dev.ps1
+Backend:
+
+```bash
+cd backend-spring
+mvn spring-boot:run
 ```
 
-Or manually:
-1. **Backend**: `cd backend && npm install && npm run dev`
-2. **Frontend**: `cd frontend && npm install && npm run dev`
+Frontend:
 
----
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## **👥 Team Jhatpat**
-- **Jay Paunikar**
-- **Srushti Rokade**
-- **Nikita Kapse**
-- **Raj Kakade**
+Main verification:
+
+```bash
+cd backend-spring
+mvn test
+```
+
+```bash
+cd frontend
+npm run build
+```
+
+## Runtime Configuration
+
+The Spring backend reads database, JWT, CORS, AI, Twilio, and FCM configuration from environment variables. See `.env.example` and `backend-spring/.env.example`.
+
+The frontend points to the Spring backend with:
+
+```env
+VITE_API_URL=http://localhost:3001
+```
+
+## Team Jhatpat
+
+- Jay Paunikar
+- Srushti Rokade
+- Nikita Kapse
+- Raj Kakade

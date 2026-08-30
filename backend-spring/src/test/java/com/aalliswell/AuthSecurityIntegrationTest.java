@@ -7,6 +7,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.Date;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +53,37 @@ class AuthSecurityIntegrationTest {
     @Test
     void protectedApiWithoutTokenReturns401() throws Exception {
         mockMvc.perform(get("/api/users/profile"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void protectedApiWithValidPatientTokenReturnsProfile() throws Exception {
+        String token = tokenFrom(register("patient@example.com", "PREGNANT")
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+
+        mockMvc.perform(get("/api/users/profile")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.profile.email").value("patient@example.com"))
+                .andExpect(jsonPath("$.profile.role").value("pregnant"));
+    }
+
+    @Test
+    void protectedApiWithInvalidJwtReturns401() throws Exception {
+        mockMvc.perform(get("/api/users/profile")
+                        .header("Authorization", "Bearer not-a-real-token"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void protectedApiWithExpiredJwtReturns401() throws Exception {
+        register("expired-token@example.com", "MOTHER").andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/users/profile")
+                        .header("Authorization", "Bearer " + expiredToken("expired-token@example.com")))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -111,6 +147,18 @@ class AuthSecurityIntegrationTest {
     private String tokenFrom(String body) throws Exception {
         JsonNode json = objectMapper.readTree(body);
         return json.get("accessToken").asText();
+    }
+
+    private String expiredToken(String email) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .subject(email)
+                .claim("email", email)
+                .claim("role", "MOTHER")
+                .issuedAt(Date.from(now.minusSeconds(120)))
+                .expiration(Date.from(now.minusSeconds(60)))
+                .signWith(Keys.hmacShaKeyFor("12345678901234567890123456789012".getBytes(StandardCharsets.UTF_8)))
+                .compact();
     }
 
     private String json(Object value) throws Exception {

@@ -50,8 +50,6 @@ public final class ActivityDtos {
     @Setter
     public static class ScheduleResponse {
         private Long id;
-        @JsonProperty("_id")
-        private String mongoId;
         private String title;
         private String time;
         private String type;
@@ -63,7 +61,6 @@ public final class ActivityDtos {
         public static ScheduleResponse from(Schedule schedule) {
             ScheduleResponse dto = new ScheduleResponse();
             dto.id = schedule.getId();
-            dto.mongoId = String.valueOf(schedule.getId());
             dto.title = schedule.getTitle();
             dto.time = schedule.getTime();
             dto.type = lower(schedule.getType());
@@ -79,8 +76,6 @@ public final class ActivityDtos {
     @Setter
     public static class ReminderResponse {
         private Long id;
-        @JsonProperty("_id")
-        private String mongoId;
         private String userId;
         private String sourceType;
         private String sourceId;
@@ -93,7 +88,6 @@ public final class ActivityDtos {
         public static ReminderResponse from(Reminder reminder) {
             ReminderResponse dto = new ReminderResponse();
             dto.id = reminder.getId();
-            dto.mongoId = String.valueOf(reminder.getId());
             dto.userId = String.valueOf(reminder.getUser().getId());
             dto.sourceType = lower(reminder.getSourceType());
             dto.sourceId = reminder.getSourceId();
@@ -116,8 +110,6 @@ public final class ActivityDtos {
     @Setter
     public static class NotificationResponse {
         private Long id;
-        @JsonProperty("_id")
-        private String mongoId;
         private String userId;
         private String title;
         private String message;
@@ -130,7 +122,6 @@ public final class ActivityDtos {
         public static NotificationResponse from(Notification notification) {
             NotificationResponse dto = new NotificationResponse();
             dto.id = notification.getId();
-            dto.mongoId = String.valueOf(notification.getId());
             dto.userId = String.valueOf(notification.getUser().getId());
             dto.title = notification.getTitle();
             dto.message = notification.getMessage();
@@ -163,8 +154,6 @@ public final class ActivityDtos {
     @Setter
     public static class DiaryEntryResponse {
         private Long id;
-        @JsonProperty("_id")
-        private String mongoId;
         private String date;
         private String mood;
         private String text;
@@ -179,7 +168,6 @@ public final class ActivityDtos {
         public static DiaryEntryResponse from(DiaryEntry entry) {
             DiaryEntryResponse dto = new DiaryEntryResponse();
             dto.id = entry.getId();
-            dto.mongoId = String.valueOf(entry.getId());
             dto.date = entry.getDate();
             dto.mood = entry.getMood();
             dto.text = entry.getText();
@@ -204,8 +192,6 @@ public final class ActivityDtos {
     @Setter
     public static class DailyTaskResponse {
         private Long id;
-        @JsonProperty("_id")
-        private String mongoId;
         private String date;
         private String task;
         private String status;
@@ -214,7 +200,6 @@ public final class ActivityDtos {
         public static DailyTaskResponse from(DailyTask task) {
             DailyTaskResponse dto = new DailyTaskResponse();
             dto.id = task.getId();
-            dto.mongoId = String.valueOf(task.getId());
             dto.date = task.getDate();
             dto.task = task.getTask();
             dto.status = lower(task.getStatus());
@@ -236,8 +221,6 @@ public final class ActivityDtos {
     @Setter
     public static class DailyCheckupResponse {
         private Long id;
-        @JsonProperty("_id")
-        private String mongoId;
         private String role;
         private String date;
         private DailyCheckupResponses responses;
@@ -245,7 +228,6 @@ public final class ActivityDtos {
         public static DailyCheckupResponse from(DailyCheckup checkup) {
             DailyCheckupResponse dto = new DailyCheckupResponse();
             dto.id = checkup.getId();
-            dto.mongoId = String.valueOf(checkup.getId());
             dto.role = lower(checkup.getRole());
             dto.date = checkup.getDate();
             dto.responses = new DailyCheckupResponses(
@@ -274,8 +256,6 @@ public final class ActivityDtos {
     @Setter
     public static class CheckupResponse {
         private Long id;
-        @JsonProperty("_id")
-        private String mongoId;
         private String date;
         private String type;
         private String note;
@@ -288,7 +268,6 @@ public final class ActivityDtos {
         public static CheckupResponse from(Checkup checkup) {
             CheckupResponse dto = new CheckupResponse();
             dto.id = checkup.getId();
-            dto.mongoId = String.valueOf(checkup.getId());
             dto.date = checkup.getDate();
             dto.type = lower(checkup.getType());
             dto.note = checkup.getNote();
@@ -320,8 +299,6 @@ public final class ActivityDtos {
     @Setter
     public static class MedicalReportResponse {
         private Long id;
-        @JsonProperty("_id")
-        private String mongoId;
         private String date;
         private String fileName;
         private String fileUrl;
@@ -332,7 +309,6 @@ public final class ActivityDtos {
         public static MedicalReportResponse from(MedicalReport report) {
             MedicalReportResponse dto = new MedicalReportResponse();
             dto.id = report.getId();
-            dto.mongoId = String.valueOf(report.getId());
             dto.date = report.getDate();
             dto.fileName = report.getFileName();
             dto.fileUrl = report.getFileUrl();
@@ -347,8 +323,6 @@ public final class ActivityDtos {
     @Setter
     public static class DoctorNoteResponse {
         private Long id;
-        @JsonProperty("_id")
-        private String mongoId;
         private String date;
         private String content;
         private String doctorName;
@@ -358,7 +332,6 @@ public final class ActivityDtos {
         public static DoctorNoteResponse from(DoctorNote note) {
             DoctorNoteResponse dto = new DoctorNoteResponse();
             dto.id = note.getId();
-            dto.mongoId = String.valueOf(note.getId());
             dto.date = note.getDate();
             dto.content = note.getContent();
             dto.doctorName = note.getDoctorName();
@@ -386,8 +359,6 @@ public final class ActivityDtos {
     @Setter
     public static class DoctorRequestResponse {
         private Long id;
-        @JsonProperty("_id")
-        private String mongoId;
         private String patientId;
         private String patientName;
         private String doctorId;
@@ -399,7 +370,6 @@ public final class ActivityDtos {
         public static DoctorRequestResponse from(DoctorRequest request) {
             DoctorRequestResponse dto = new DoctorRequestResponse();
             dto.id = request.getId();
-            dto.mongoId = String.valueOf(request.getId());
             dto.patientId = String.valueOf(request.getPatient().getId());
             dto.patientName = request.getPatientName();
             dto.doctorId = String.valueOf(request.getDoctor().getId());
@@ -427,8 +397,6 @@ public final class ActivityDtos {
     @Setter
     public static class CalendarItemResponse {
         private Long id;
-        @JsonProperty("_id")
-        private String mongoId;
         private String date;
         private String category;
         private String title;
@@ -437,7 +405,6 @@ public final class ActivityDtos {
         public static CalendarItemResponse from(CalendarItem item) {
             CalendarItemResponse dto = new CalendarItemResponse();
             dto.id = item.getId();
-            dto.mongoId = String.valueOf(item.getId());
             dto.date = item.getDate();
             dto.category = item.getCategory();
             dto.title = item.getTitle();
@@ -467,8 +434,6 @@ public final class ActivityDtos {
     @Setter
     public static class ProductResponse {
         private Long id;
-        @JsonProperty("_id")
-        private String mongoId;
         private String name;
         private String description;
         private String imageUrl;
@@ -482,7 +447,6 @@ public final class ActivityDtos {
         public static ProductResponse from(Product product) {
             ProductResponse dto = new ProductResponse();
             dto.id = product.getId();
-            dto.mongoId = String.valueOf(product.getId());
             dto.name = product.getName();
             dto.description = product.getDescription();
             dto.imageUrl = product.getImageUrl();

@@ -55,6 +55,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { DailyOneStepCard } from '@/components/cards/DailyOneStepCard';
 import { getTodayStr, getTomorrowStr } from '@/lib/utils';
+import { api } from '@/lib/api';
 
 interface ParentDashboardProps {
   userType?: 'pregnant' | 'mother';
@@ -575,15 +576,10 @@ const ParentDashboard: React.FC<ParentDashboardProps> = () => {
                 // ALSO trigger the automated Twilio call as a backup/alert
                 try {
                   console.log("Initiating backend call to:", profile.emergencyContact.phone);
-                  const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/call/emergency`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      to: profile.emergencyContact.phone,
-                      name: profile.name
-                    })
+                  const data = await api.post('/call/emergency', {
+                    to: profile.emergencyContact.phone,
+                    name: profile.name
                   });
-                  const data = await res.json();
                   console.log("Backend call response:", data);
                   if (data.success) {
                     console.log("Automatic alert call initiated successfully.");

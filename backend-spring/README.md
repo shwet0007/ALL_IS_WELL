@@ -1,6 +1,6 @@
 # Aal Is Well Spring Backend
 
-Spring Boot migration target for the existing Express/MongoDB backend.
+Primary application backend for Aal Is Well.
 
 ## Stack
 
@@ -30,8 +30,7 @@ The backend runs on `http://localhost:3001` by default, matching the current Rea
 
 ## Important Migration Notes
 
-- Firebase Authentication is replaced by `/api/auth/register` and `/api/auth/login`.
+- Application authentication uses `/api/auth/register`, `/api/auth/login`, Spring Security, JWT, BCrypt, and MySQL user records.
 - Firebase Cloud Messaging is still represented by `FcmNotificationService` and device token storage on the MySQL user row.
-- The Node backend remains in `backend/` as the reference implementation.
 - Python RAG and cry-analysis services remain separate services and are called over HTTP.
 - JPA uses `ddl-auto=update` for local migration speed. Use Flyway/Liquibase migrations before production.

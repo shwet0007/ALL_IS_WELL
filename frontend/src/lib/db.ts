@@ -1,6 +1,8 @@
 import { api } from './api';
 
 export interface UserProfile {
+    id?: number;
+    uid?: string;
     name: string;
     email: string;
     role: 'pregnant' | 'mother' | 'doctor';
@@ -154,10 +156,9 @@ export interface ScheduleItem {
 export const getSchedule = async (userId: string) => {
     try {
         const response = await api.get('/users/schedule');
-        // Map _id to id
         return response.items.map((item: any) => ({
             ...item,
-            id: item._id || item.id
+            id: item.id
         }));
     } catch (error) {
         console.error('Error fetching schedule:', error);
@@ -169,7 +170,7 @@ export const addScheduleItem = async (userId: string, item: Omit<ScheduleItem, '
     try {
         const response = await api.post('/users/schedule', item);
         const newItem = response.item;
-        return { ...newItem, id: newItem._id || newItem.id };
+        return { ...newItem, id: newItem.id };
     } catch (error) {
         console.error('Error adding schedule item:', error);
         throw error;
@@ -203,7 +204,7 @@ export const clearSchedule = async (userId: string) => {
 
 // --- Diet Plan Services ---
 export const saveDietPlanProgress = async (userId: string, date: string, sections: any[]) => {
-    // Could use user profile or a separate diet collection
+    // Placeholder until diet progress has a dedicated Spring endpoint.
     return true;
 }
 
@@ -495,7 +496,7 @@ export const getReminders = async (userId: string) => {
         const response = await api.get('/reminders/active');
         return response.reminders.map((r: any) => ({
             ...r,
-            id: r._id || r.id
+            id: r.id
         }));
     } catch (error) {
         console.error('Error fetching reminders:', error);
@@ -530,7 +531,7 @@ export const getNotifications = async () => {
         const response = await api.get('/notifications');
         return response.notifications.map((n: any) => ({
             ...n,
-            id: n._id || n.id
+            id: n.id
         }));
     } catch (error) {
         console.error('Error fetching notifications:', error);

@@ -7,7 +7,7 @@ import { Loader2, UserCheck, UserX, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface DoctorRequest {
-    _id: string;
+    id: string;
     patientId: string;
     patientName: string;
     status: string;
@@ -40,7 +40,7 @@ export default function DoctorRequests() {
             await api.patch(`/users/doctor-request/${requestId}`, { status });
             toast.success(status === 'accepted' ? 'Request accepted! Patient connected.' : 'Request rejected.');
             // Remove from list
-            setRequests(prev => prev.filter(r => r._id !== requestId));
+            setRequests(prev => prev.filter(r => r.id !== requestId));
         } catch (error) {
             toast.error('Failed to process request');
         } finally {
@@ -75,7 +75,7 @@ export default function DoctorRequests() {
             </div>
 
             {requests.map((request) => (
-                <Card key={request._id}>
+                <Card key={request.id}>
                     <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                             <div>
@@ -92,11 +92,11 @@ export default function DoctorRequests() {
                     <CardContent>
                         <div className="flex gap-3">
                             <Button
-                                onClick={() => handleResponse(request._id, 'accepted')}
-                                disabled={processingId === request._id}
+                                onClick={() => handleResponse(request.id, 'accepted')}
+                                disabled={processingId === request.id}
                                 className="flex-1 bg-green-600 hover:bg-green-700"
                             >
-                                {processingId === request._id ? (
+                                {processingId === request.id ? (
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                 ) : (
                                     <UserCheck className="w-4 h-4 mr-2" />
@@ -104,8 +104,8 @@ export default function DoctorRequests() {
                                 Accept
                             </Button>
                             <Button
-                                onClick={() => handleResponse(request._id, 'rejected')}
-                                disabled={processingId === request._id}
+                                onClick={() => handleResponse(request.id, 'rejected')}
+                                disabled={processingId === request.id}
                                 variant="outline"
                                 className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
                             >

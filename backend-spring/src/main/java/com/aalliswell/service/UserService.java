@@ -44,7 +44,6 @@ public class UserService {
         UserProfileDto dto = new UserProfileDto();
         dto.setId(user.getId());
         dto.setUid(String.valueOf(user.getId()));
-        dto.setFirebaseUid(String.valueOf(user.getId()));
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
         dto.setRole(user.getRole().name().toLowerCase());
@@ -124,7 +123,6 @@ public class UserService {
         UserProfileDto dto = new UserProfileDto();
         dto.setId(user.getId());
         dto.setUid(String.valueOf(user.getId()));
-        dto.setFirebaseUid(String.valueOf(user.getId()));
         dto.setName(user.getName());
         dto.setRole(user.getRole().name().toLowerCase());
         dto.setEmail(user.getEmail());

@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface DailyTask {
-    _id: string;
+    id: string;
     task: string;
     status: 'pending' | 'completed' | 'skipped';
     note?: string;
@@ -39,7 +39,7 @@ export const DailyOneStepCard: React.FC = () => {
         if (!task) return;
         setUpdating(true);
         try {
-            const data = await api.patch(`/users/daily-task/${task._id}`, { status });
+            const data = await api.patch(`/users/daily-task/${task.id}`, { status });
             setTask(data.task);
             if (status === 'completed') {
                 setStreak(prev => prev + 1);
