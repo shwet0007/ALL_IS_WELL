@@ -1,15 +1,23 @@
 /// <reference types="vite/client" />
-import { auth } from './firebase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const ACCESS_TOKEN_KEY = 'aal_access_token';
+
+export function getAccessToken() {
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
+}
+
+export function setAccessToken(token: string) {
+    localStorage.setItem(ACCESS_TOKEN_KEY, token);
+}
+
+export function clearAccessToken() {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+}
 
 // Helper to get auth token
 const getAuthToken = async (): Promise<string | null> => {
-    const user = auth.currentUser;
-    if (user) {
-        return await user.getIdToken();
-    }
-    return null;
+    return getAccessToken();
 };
 
 // Generic API request helper

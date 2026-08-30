@@ -1,0 +1,49 @@
+spring:
+  main:
+    banner-mode: off
+  task:
+    scheduling:
+      enabled: false
+  datasource:
+    url: jdbc:h2:mem:aal_is_well_test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+app:
+  jwt:
+    secret: 12345678901234567890123456789012
+    expiration-ms: 900000
+  cors:
+    allowed-origins: http://localhost:5173
+  groq:
+    api-key:
+    base-url: https://api.groq.com/openai/v1
+    model: llama-3.3-70b-versatile
+  sarvam:
+    api-key:
+    base-url: https://api.sarvam.ai
+  rag:
+    service-url: http://localhost:8001
+  cry-analysis:
+    service-url: http://localhost:8000
+  twilio:
+    account-sid:
+    auth-token:
+    phone-number:
+  fcm:
+    server-key:
+    endpoint: https://fcm.googleapis.com/fcm/send
+
+logging:
+  level:
+    root: WARN
+    com.aalliswell: INFO
+    org.springframework: WARN
+    org.hibernate.SQL: WARN

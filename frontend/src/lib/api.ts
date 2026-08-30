@@ -1,12 +1,21 @@
-import { auth } from './firebase';
-
 const BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`;
+const ACCESS_TOKEN_KEY = 'aal_access_token';
+
+export function getAccessToken() {
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
+}
+
+export function setAccessToken(token: string) {
+    localStorage.setItem(ACCESS_TOKEN_KEY, token);
+}
+
+export function clearAccessToken() {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+}
 
 async function getAuthHeader() {
-    const user = auth.currentUser;
-    if (!user) return {};
-    const token = await user.getIdToken();
-    return { 'Authorization': `Bearer ${token}` };
+    const token = getAccessToken();
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
 
 export const api = {
@@ -166,4 +175,3 @@ export default {
     sarvam: sarvamAPI,
     api // Export generic api too
 };
-

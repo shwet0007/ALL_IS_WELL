@@ -9,6 +9,8 @@ coverage/
 # Production
 dist/
 build/
+target/
+backend-spring/target/
 
 # Misc
 .DS_Store

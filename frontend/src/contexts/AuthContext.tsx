@@ -1,24 +1,30 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signInWithPopup,
-    GoogleAuthProvider,
-    signOut,
-    onAuthStateChanged,
-    User
-} from 'firebase/auth';
-import { auth, googleProvider, messaging } from '@/lib/firebase';
 import { getToken } from 'firebase/messaging';
+import { messaging } from '@/lib/firebase';
+import { api, clearAccessToken, getAccessToken, setAccessToken } from '@/lib/api';
 import { getUserProfile, UserProfile, updateFcmToken } from '@/lib/db';
 
+interface AppUser {
+    uid: string;
+    email: string | null;
+    displayName?: string | null;
+}
+
+interface AuthApiResponse {
+    accessToken: string;
+    user: UserProfile & {
+        id?: number;
+        uid?: string;
+        firebase_uid?: string;
+    };
+}
+
 interface AuthContextType {
-    currentUser: User | null;
+    currentUser: AppUser | null;
     userProfile: UserProfile | null;
     loading: boolean;
-    signup: (email: string, password: string) => Promise<any>;
-    login: (email: string, password: string) => Promise<any>;
-    loginWithGoogle: () => Promise<any>;
+    signup: (email: string, password: string) => Promise<AuthApiResponse>;
+    login: (email: string, password: string) => Promise<AuthApiResponse>;
     logout: () => Promise<void>;
     refreshProfile: () => Promise<void>;
 }
@@ -34,60 +40,93 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
 
-    function signup(email: string, password: string) {
-        return createUserWithEmailAndPassword(auth, email, password);
+    async function signup(email: string, password: string) {
+        const response = await api.post('/auth/register', { email, password });
+        applyAuthResponse(response);
+        return response;
     }
 
-    function login(email: string, password: string) {
-        return signInWithEmailAndPassword(auth, email, password);
+    async function login(email: string, password: string) {
+        const response = await api.post('/auth/login', { email, password });
+        applyAuthResponse(response);
+        return response;
     }
 
-    function loginWithGoogle() {
-        return signInWithPopup(auth, googleProvider);
-    }
-
-    function logout() {
-        return signOut(auth);
+    async function logout() {
+        try {
+            await api.post('/auth/logout', {});
+        } catch {
+            // Stateless JWT logout is handled by clearing the token on the client.
+        } finally {
+            clearAccessToken();
+            localStorage.removeItem('userRole');
+            setCurrentUser(null);
+            setUserProfile(null);
+        }
     }
 
     async function refreshProfile() {
-        if (currentUser) {
-            try {
-                const profile = await getUserProfile(currentUser.uid);
-                setUserProfile(profile);
-            } catch (error) {
-                console.error("Error refreshing profile:", error);
+        if (!getAccessToken()) return;
+        const profile = await getUserProfile('current');
+        if (profile) {
+            setUserProfile(profile);
+            setCurrentUser(toCurrentUser(profile));
+            if (profile.role) {
+                localStorage.setItem('userRole', profile.role);
             }
         }
     }
 
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            console.log("Auth State Changed:", user ? user.uid : "No User");
-            setLoading(true); // Start loading while we fetch profile
-            setCurrentUser(user);
+    function applyAuthResponse(response: AuthApiResponse) {
+        setAccessToken(response.accessToken);
+        setUserProfile(response.user);
+        setCurrentUser(toCurrentUser(response.user));
+        if (response.user?.role) {
+            localStorage.setItem('userRole', response.user.role);
+        }
+    }
 
-            if (user) {
-                try {
-                    console.log("Fetching profile for:", user.uid);
-                    const profile = await getUserProfile(user.uid);
-                    console.log("Profile fetched:", profile);
-                    setUserProfile(profile);
-                } catch (error) {
-                    console.error("Error fetching profile:", error);
-                    setUserProfile(null);
+    function toCurrentUser(profile: AuthApiResponse['user'] | UserProfile): AppUser {
+        const typedProfile = profile as AuthApiResponse['user'];
+        const id = typedProfile.uid || typedProfile.firebase_uid || String(typedProfile.id || '');
+        return {
+            uid: id,
+            email: profile.email || null,
+            displayName: profile.name || null
+        };
+    }
+
+    useEffect(() => {
+        async function bootstrap() {
+            setLoading(true);
+            if (!getAccessToken()) {
+                setCurrentUser(null);
+                setUserProfile(null);
+                setLoading(false);
+                return;
+            }
+
+            const profile = await getUserProfile('current');
+            if (profile) {
+                setUserProfile(profile);
+                setCurrentUser(toCurrentUser(profile));
+                if (profile.role) {
+                    localStorage.setItem('userRole', profile.role);
                 }
             } else {
+                clearAccessToken();
+                localStorage.removeItem('userRole');
+                setCurrentUser(null);
                 setUserProfile(null);
             }
             setLoading(false);
-        });
+        }
 
-        return unsubscribe;
+        bootstrap();
     }, []);
 
     const value = {
@@ -96,7 +135,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         signup,
         login,
-        loginWithGoogle,
         logout,
         refreshProfile
     };
@@ -111,25 +149,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     vapidKey: 'BLz4JpUCuDvqjLLO3aBOijWOZ3JripPe1mHXj27C3-Md-vZrnhA8aG7uxV7jCpcSDV6TYzGEfvjXrQTeORqDULA'
                 });
                 if (token) {
-                    console.log('✅ FCM Token generated:', token);
                     await updateFcmToken(token);
-                    console.log('✅ FCM Token saved to backend');
-                } else {
-                    console.warn('⚠️ No FCM token received. Check Firebase Cloud Messaging configuration.');
                 }
-            } else {
-                console.log('ℹ️ Notification permission denied by user');
             }
-        } catch (error: any) {
-            // Don't show error for FCM configuration issues - it's optional
-            if (error?.code === 'messaging/token-subscribe-failed') {
-                console.warn('⚠️ FCM not configured. To enable push notifications:');
-                console.warn('1. Go to Firebase Console → Project Settings → Cloud Messaging');
-                console.warn('2. Enable Cloud Messaging API in Google Cloud Console');
-                console.warn('3. The app will work fine without push notifications');
-            } else {
-                console.error('Error registering notifications:', error);
-            }
+        } catch (error) {
+            console.warn('Push notification registration failed:', error);
         }
     };
 
