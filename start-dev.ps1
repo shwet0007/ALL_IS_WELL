@@ -16,7 +16,7 @@ Write-Host "Dependencies ready!" -ForegroundColor Green
 Write-Host ""
 Write-Host "Starting servers..." -ForegroundColor Cyan
 Write-Host "   - Spring Boot Backend: http://localhost:3001" -ForegroundColor Gray
-Write-Host "   - Frontend: http://localhost:5173" -ForegroundColor Gray
+Write-Host "   - Frontend: http://localhost:8080" -ForegroundColor Gray
 Write-Host ""
 
 # Start Spring Boot backend in a new window.

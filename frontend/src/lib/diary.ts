@@ -38,9 +38,13 @@ export const uploadDiaryImage = async (file: File, userId: string): Promise<stri
     }
 
     try {
+        if (!storage) {
+            throw new Error("Firebase Storage is not configured.");
+        }
+
         const path = `diary_images/${userId}/${Date.now()}_${file.name}`;
         const storageRef = ref(storage, path);
-        const snapshot = await uploadBytes(storageRef, file);
+        await uploadBytes(storageRef, file);
         const url = await getDownloadURL(storageRef);
         return url;
     } catch (error: any) {

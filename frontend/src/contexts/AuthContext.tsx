@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getToken } from 'firebase/messaging';
-import { messaging } from '@/lib/firebase';
+import { getFirebaseMessaging } from '@/lib/firebase';
 import { api, clearAccessToken, getAccessToken, setAccessToken } from '@/lib/api';
 import { getUserProfile, UserProfile, updateFcmToken } from '@/lib/db';
 
@@ -43,6 +43,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
 
+    function resetAuthState() {
+        localStorage.removeItem('userRole');
+        setCurrentUser(null);
+        setUserProfile(null);
+    }
+
     async function signup(email: string, password: string) {
         const response = await api.post('/auth/register', { email, password });
         applyAuthResponse(response);
@@ -62,21 +68,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Stateless JWT logout is handled by clearing the token on the client.
         } finally {
             clearAccessToken();
-            localStorage.removeItem('userRole');
-            setCurrentUser(null);
-            setUserProfile(null);
+            resetAuthState();
         }
     }
 
     async function refreshProfile() {
         if (!getAccessToken()) return;
-        const profile = await getUserProfile('current');
-        if (profile) {
-            setUserProfile(profile);
-            setCurrentUser(toCurrentUser(profile));
-            if (profile.role) {
-                localStorage.setItem('userRole', profile.role);
+        try {
+            const profile = await getUserProfile('current');
+            if (profile) {
+                setUserProfile(profile);
+                setCurrentUser(toCurrentUser(profile));
+                if (profile.role) {
+                    localStorage.setItem('userRole', profile.role);
+                }
+            } else {
+                clearAccessToken();
+                resetAuthState();
             }
+        } catch (error) {
+            console.warn('Profile refresh failed:', error);
+            clearAccessToken();
+            resetAuthState();
         }
     }
 
@@ -102,27 +115,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         async function bootstrap() {
             setLoading(true);
-            if (!getAccessToken()) {
-                setCurrentUser(null);
-                setUserProfile(null);
-                setLoading(false);
-                return;
-            }
-
-            const profile = await getUserProfile('current');
-            if (profile) {
-                setUserProfile(profile);
-                setCurrentUser(toCurrentUser(profile));
-                if (profile.role) {
-                    localStorage.setItem('userRole', profile.role);
+            try {
+                if (!getAccessToken()) {
+                    resetAuthState();
+                    return;
                 }
-            } else {
+
+                const profile = await getUserProfile('current');
+                if (profile) {
+                    setUserProfile(profile);
+                    setCurrentUser(toCurrentUser(profile));
+                    if (profile.role) {
+                        localStorage.setItem('userRole', profile.role);
+                    }
+                } else {
+                    clearAccessToken();
+                    resetAuthState();
+                }
+            } catch (error) {
+                console.warn('Auth bootstrap failed:', error);
                 clearAccessToken();
-                localStorage.removeItem('userRole');
-                setCurrentUser(null);
-                setUserProfile(null);
+                resetAuthState();
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         }
 
         bootstrap();
@@ -142,6 +158,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const registerNotifications = async () => {
         if (!currentUser) return;
         try {
+            const messaging = await getFirebaseMessaging();
+            if (!messaging || !('Notification' in window)) return;
+
             const permission = await Notification.requestPermission();
             if (permission === 'granted') {
                 const token = await getToken(messaging, {
