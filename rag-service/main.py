@@ -10,7 +10,15 @@ from groq import Groq
 from dotenv import load_dotenv
 
 # Load environment variables
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(BASE_DIR)
 load_dotenv()
+load_dotenv(os.path.join(ROOT_DIR, ".env"))
+
+index = None
+metadata = []
+model = None
+groq_client = None
 
 class QueryRequest(BaseModel):
     query: str
@@ -21,7 +29,7 @@ class QueryResponse(BaseModel):
     sources: List[str]
 
 # Configuration
-INDEX_DIR = "data/faiss_index"
+INDEX_DIR = os.path.join(BASE_DIR, "data", "faiss_index")
 INDEX_FILE = os.path.join(INDEX_DIR, "index.faiss")
 METADATA_FILE = os.path.join(INDEX_DIR, "metadata.npy")
 MODEL_NAME = "all-MiniLM-L6-v2"

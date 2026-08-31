@@ -33,6 +33,7 @@ HM035_HackMatrix-main/
 ├── cry-analysis/      # Python infant cry-analysis service
 ├── experiments/       # Research and prototypes
 ├── .env.example       # Root environment template
+├── start-dev.sh       # macOS/Linux frontend + Spring backend helper
 └── start-dev.ps1      # Local frontend + Spring backend helper
 ```
 
@@ -49,7 +50,7 @@ HM035_HackMatrix-main/
 Copy `.env.example` values into your local shell or service configuration. The Spring backend expects MySQL and JWT values such as:
 
 ```env
-DB_URL=jdbc:mysql://localhost:3306/aal_is_well?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+DB_URL='jdbc:mysql://localhost:3306/aal_is_well?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
 DB_USERNAME=root
 DB_PASSWORD=
 JWT_SECRET=replace-with-at-least-32-random-characters
@@ -62,6 +63,13 @@ The frontend also has `frontend/.env.example` for Vite and Firebase client SDK v
 
 ## Run Locally
 
+Use the helper script on macOS/Linux:
+
+```bash
+chmod +x start-dev.sh
+./start-dev.sh
+```
+
 Use the helper script on Windows/PowerShell:
 
 ```powershell
@@ -72,6 +80,9 @@ Or start services manually:
 
 ```bash
 cd backend-spring
+set -a
+source ../.env
+set +a
 mvn spring-boot:run
 ```
 
@@ -81,18 +92,21 @@ npm install
 npm run dev
 ```
 
+The frontend is configured to use `http://localhost:8080`. If that port is already in use, stop the old frontend process instead of using the fallback Vite port, otherwise backend CORS will reject browser requests.
+
 Python services remain independent:
 
 ```bash
-cd rag-service
-pip install -r requirements.txt
-python main.py
+pip install -r rag-service/requirements.txt
+python3 rag-service/main.py
 ```
+
+If the RAG model is already cached and your network is unavailable, use `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 python3 rag-service/main.py`.
 
 ```bash
 cd cry-analysis
 pip install -r requirements.txt
-python main.py
+python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 ## Authentication

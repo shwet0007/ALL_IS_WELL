@@ -19,10 +19,7 @@ public class RagService {
     }
 
     public Map<String, Object> query(String question, String language, Map<String, Object> userProfile) {
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("question", question);
-        payload.put("language", language == null ? "en" : language);
-        payload.put("userProfile", userProfile);
+        Map<String, Object> payload = buildPythonRagPayload(question, userProfile);
 
         Map<String, Object> response = webClient.post()
                 .uri("/query")
@@ -40,5 +37,26 @@ public class RagService {
             throw new ExternalServiceException("RAG service returned an empty response");
         }
         return response;
+    }
+
+    Map<String, Object> buildPythonRagPayload(String question, Map<String, Object> userProfile) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("query", question);
+        payload.put("user_role", resolveUserRole(userProfile));
+        return payload;
+    }
+
+    private String resolveUserRole(Map<String, Object> userProfile) {
+        if (userProfile == null || userProfile.isEmpty()) {
+            return "user";
+        }
+        Object role = userProfile.get("role");
+        if (role == null) {
+            role = userProfile.get("userRole");
+        }
+        if (role == null || String.valueOf(role).isBlank()) {
+            return "user";
+        }
+        return String.valueOf(role);
     }
 }

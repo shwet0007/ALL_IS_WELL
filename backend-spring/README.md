@@ -18,15 +18,29 @@ Primary application backend for Aal Is Well.
 ## Run Locally
 
 1. Create a MySQL database named `aal_is_well`, or keep the default JDBC URL with `createDatabaseIfNotExist=true`.
-2. Export the values from `.env.example` in your shell.
+2. Copy the root `.env.example` to `.env`, fill local values, then load it in your shell.
 3. Use a non-empty `JWT_SECRET` with at least 32 characters.
 4. Start the app:
 
 ```bash
+set -a
+source ../.env
+set +a
 mvn spring-boot:run
 ```
 
 The backend runs on `http://localhost:3001` by default, matching the current React API base URL.
+
+For RAG and cry-analysis backed features, also start the Python services:
+
+```bash
+python3 ../rag-service/main.py
+```
+
+```bash
+cd ../cry-analysis
+python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
+```
 
 ## Important Migration Notes
 
