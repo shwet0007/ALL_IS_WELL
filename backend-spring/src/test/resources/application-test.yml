@@ -37,9 +37,10 @@ app:
     account-sid:
     auth-token:
     phone-number:
-  fcm:
-    server-key:
-    endpoint: https://fcm.googleapis.com/fcm/send
+  firebase:
+    enabled: false
+    credentials-path:
+    project-id:
 
 logging:
   level:

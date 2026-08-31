@@ -21,8 +21,6 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   getConnectedPatients,
-  updateUserProfile,
-  generateJoinCode,
   UserProfile,
   getDoctorCheckups,
   Checkup,
@@ -60,11 +58,10 @@ const statusLabels = {
 };
 
 const DoctorDashboard: React.FC = () => {
-  const { userProfile, currentUser, refreshProfile } = useAuth();
+  const { userProfile, currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [copied, setCopied] = useState(false);
 
-  // State from HEAD
   const [patients, setPatients] = useState<any[]>([]);
   const [loadingPatients, setLoadingPatients] = useState(true);
   const [selectedPatient, setSelectedPatient] = useState<UserProfile | null>(null);
@@ -72,17 +69,14 @@ const DoctorDashboard: React.FC = () => {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [checkups, setCheckups] = useState<Checkup[]>([]);
 
-  // State from Remote
   const [roomCode, setRoomCode] = useState<string>('');
   const [loadingRoomCode, setLoadingRoomCode] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Initialize Data
   useEffect(() => {
     const initDoctorData = async () => {
       if (currentUser && userProfile && userProfile.role === 'doctor') {
 
-        // 1. Initialize Room Code (Remote Logic)
         try {
           let room = await getDoctorRoom(currentUser.uid);
           if (!room) {
@@ -97,14 +91,6 @@ const DoctorDashboard: React.FC = () => {
           setLoadingRoomCode(false);
         }
 
-        // 2. Fallback: Generate Legacy Join Code if missing (HEAD Logic - keeping for safety)
-        if (!userProfile.joinCode) {
-          const newCode = generateJoinCode(userProfile.name);
-          await updateUserProfile(currentUser.uid, { joinCode: newCode });
-          await refreshProfile();
-        }
-
-        // 3. Fetch Connected Patients & Checkups (HEAD Logic)
         try {
           const [connectedPatients, doctorCheckups] = await Promise.all([
             getConnectedPatients(currentUser.uid),
@@ -113,7 +99,6 @@ const DoctorDashboard: React.FC = () => {
 
           setCheckups(doctorCheckups);
 
-          // Format patients for display
           const formattedPatients = connectedPatients.map((p) => {
             let weekOrAge = 0;
             let type = 'pregnant';
@@ -138,9 +123,9 @@ const DoctorDashboard: React.FC = () => {
               id: p.id,
               name: p.name,
               type,
-              status: p.highRisk ? 'urgent' : 'healthy', // Simple logic for now
+              status: p.highRisk ? 'urgent' : 'healthy',
               weekOrAge,
-              lastVisit: 'Recently', // Placeholder
+              lastVisit: 'Recently',
               avatar
             };
           });
@@ -154,14 +139,12 @@ const DoctorDashboard: React.FC = () => {
     };
 
     initDoctorData();
-  }, [currentUser, userProfile, refreshProfile, refreshTrigger]);
+  }, [currentUser, userProfile, refreshTrigger]);
 
 
   const handleCopyCode = () => {
-    // Prefer Room Code (Remote) but fallback to Join Code (HEAD)
-    const codeToCopy = roomCode || userProfile?.joinCode;
-    if (codeToCopy) {
-      navigator.clipboard.writeText(codeToCopy);
+    if (roomCode) {
+      navigator.clipboard.writeText(roomCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -192,7 +175,7 @@ const DoctorDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Doctor Room Code (New Design + Legacy Support) */}
+            {/* Doctor Room Code */}
             <Card className="md:w-auto w-full max-w-sm border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -212,7 +195,7 @@ const DoctorDashboard: React.FC = () => {
                 ) : (
                   <div className="flex items-center gap-2">
                     <code className="text-3xl font-bold tracking-widest text-primary font-mono">
-                      {roomCode || userProfile?.joinCode || '...'}
+                      {roomCode || '...'}
                     </code>
                     <Button
                       variant="ghost"

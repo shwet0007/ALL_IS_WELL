@@ -21,7 +21,6 @@ public class ProfileUpdateRequest {
     private String assignedDoctorId;
     private String doctorRoomId;
     private String doctorId;
-    private String doctorName;
     private String pregnancyStartDate;
     private String trimester;
     private String previousComplications;

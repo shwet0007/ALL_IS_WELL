@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-    PregnancyResource,
-    toggleResourceBookmark,
-    getSavedResources
-} from '@/lib/db';
-import { useAuth } from '@/contexts/AuthContext';
+import { PregnancyResource } from '@/lib/db';
 import ResourceCard from './ResourceCard';
 import ResourceDetailDialog from './ResourceDetailDialog';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,12 +14,10 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { MOCK_RESOURCES, FEATURED_RESOURCE } from '@/data/mockResources';
-import { Card, CardContent } from "@/components/ui/card";
 
 const categories = ['All', 'Nutrition', 'Mental Health', 'Exercise', 'Pregnancy Care'];
 
 const ResourcesSection = () => {
-    const { currentUser } = useAuth();
     const [resources, setResources] = useState<PregnancyResource[]>([]);
     const [savedResourceIds, setSavedResourceIds] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
@@ -32,26 +25,17 @@ const ResourcesSection = () => {
     const [showSavedOnly, setShowSavedOnly] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Dialog State
     const [selectedResource, setSelectedResource] = useState<PregnancyResource | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     useEffect(() => {
-        // Symulate API load
         const loadData = async () => {
             setLoading(true);
             try {
-                // In a real scenario, we might still fetch saved IDs from DB, 
-                // but for this task we can mock or keep the existing DB call if it doesn't break.
-                // The prompt verification says "UI only", so let's stick to local state for bookmarks mostly, 
-                // but if the user wants "No backend calls", we should mock getSavedResources too or just use empty.
-                // However, the prompt says "No bookmarking persistence", so local state is fine.
-
-                // Simulating network delay
                 await new Promise(resolve => setTimeout(resolve, 800));
 
                 setResources(MOCK_RESOURCES);
-                setSavedResourceIds([]); // Reset for session
+                setSavedResourceIds([]);
             } catch (e) {
                 console.error(e);
             } finally {
@@ -64,7 +48,6 @@ const ResourcesSection = () => {
 
     const handleToggleSave = async (resourceId: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        // UI Only persistance (session based)
         const isCurrentlySaved = savedResourceIds.includes(resourceId);
 
         if (isCurrentlySaved) {
@@ -95,7 +78,6 @@ const ResourcesSection = () => {
 
     return (
         <div className="space-y-8 pb-20 animate-fade-in">
-            {/* Header Area */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h2 className="text-3xl font-bold flex items-center gap-2 text-foreground">
@@ -117,7 +99,6 @@ const ResourcesSection = () => {
                 </div>
             </div>
 
-            {/* Featured Section */}
             {!showSavedOnly && !searchQuery && (
                 <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-xl shadow-pink-200">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
@@ -145,7 +126,6 @@ const ResourcesSection = () => {
                             </Button>
                         </div>
                         <div className="hidden md:flex items-center justify-center">
-                            {/* Decorative or detailed image could go here, or just keep the gradient clean */}
                             <div className="w-full h-48 rounded-2xl bg-black/20 backdrop-blur-sm flex items-center justify-center border border-white/10 shadow-inner">
                                 <PlayCircle className="w-16 h-16 text-white opacity-80" />
                             </div>
@@ -154,7 +134,6 @@ const ResourcesSection = () => {
                 </section>
             )}
 
-            {/* Search and Filter Bar */}
             <div className="sticky top-0 bg-background/80 backdrop-blur-lg z-20 py-4 -mx-4 px-4 space-y-4">
                 <div className="relative max-w-xl mx-auto md:mx-0">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -166,7 +145,6 @@ const ResourcesSection = () => {
                     />
                 </div>
 
-                {/* Categories */}
                 {!showSavedOnly && (
                     <div className="overflow-x-auto pb-2 scrollbar-hide">
                         <Tabs defaultValue="All" value={activeCategory} onValueChange={setActiveCategory} className="w-full">

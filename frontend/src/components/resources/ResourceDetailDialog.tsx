@@ -60,7 +60,6 @@ const ResourceDetailDialog: React.FC<ResourceDetailDialogProps> = ({ isOpen, onC
                 </DialogHeader>
 
                 <div className="space-y-6 py-4">
-                    {/* Media Embed or Placeholder */}
                     {resource.type === 'video' && embedUrl ? (
                         <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                             <iframe

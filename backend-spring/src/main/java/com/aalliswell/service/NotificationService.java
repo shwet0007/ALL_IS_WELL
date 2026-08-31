@@ -6,7 +6,9 @@ import com.aalliswell.entity.User;
 import com.aalliswell.enums.NotificationSourceType;
 import com.aalliswell.exception.ResourceNotFoundException;
 import com.aalliswell.repository.NotificationRepository;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,7 +69,10 @@ public class NotificationService {
         notification.setSourceType(sourceType);
         notification.setSourceId(sourceId);
         Notification saved = notificationRepository.save(notification);
-        fcmNotificationService.send(user, title, message);
+        Map<String, String> data = new HashMap<>();
+        data.put("sourceType", sourceType.name().toLowerCase());
+        data.put("sourceId", sourceId == null ? "" : sourceId);
+        fcmNotificationService.send(user, title, message, data);
         return saved;
     }
 

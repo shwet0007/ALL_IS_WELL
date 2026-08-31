@@ -1,5 +1,6 @@
 package com.aalliswell.service;
 
+import com.aalliswell.dto.activity.ActivityDtos;
 import com.aalliswell.dto.user.ProfileUpdateRequest;
 import com.aalliswell.dto.user.UserProfileDto;
 import com.aalliswell.entity.Baby;
@@ -10,16 +11,22 @@ import com.aalliswell.entity.MedicalCondition;
 import com.aalliswell.entity.PregnancyProfile;
 import com.aalliswell.entity.User;
 import com.aalliswell.enums.Role;
+import com.aalliswell.exception.DoctorRegistrationNotAllowedException;
 import com.aalliswell.exception.EmailAlreadyExistsException;
+import com.aalliswell.exception.ForbiddenException;
 import com.aalliswell.exception.ResourceNotFoundException;
 import com.aalliswell.repository.UserRepository;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final UserRepository userRepository;
 
@@ -68,21 +75,28 @@ public class UserService {
             user.setName(request.getName().trim());
         }
         if (request.getRole() != null) {
-            user.setRole(EnumParser.parse(Role.class, request.getRole(), user.getRole()));
+            Role requestedRole = EnumParser.parse(Role.class, request.getRole(), user.getRole());
+            if (requestedRole == Role.DOCTOR && user.getRole() != Role.DOCTOR) {
+                throw new DoctorRegistrationNotAllowedException("Doctor accounts require verification or administrator approval.");
+            }
+            if (requestedRole != user.getRole() && user.getRole() == Role.DOCTOR) {
+                throw new ForbiddenException("Doctor role changes require administrator approval");
+            }
+            user.setRole(requestedRole);
         }
         setIfNotNull(request.getLanguage(), user::setLanguage);
         setIfNotNull(request.getAge(), user::setAge);
         setIfNotNull(request.getHeight(), user::setHeight);
         setIfNotNull(request.getWeight(), user::setWeight);
         setIfNotNull(request.getBloodGroup(), user::setBloodGroup);
-        setIfNotNull(request.getJoinCode(), user::setJoinCode);
-        setIfNotNull(request.getDoctorRoomId(), user::setDoctorRoomId);
         setIfNotNull(request.getSpecialization(), user::setSpecialization);
         setIfNotNull(request.getClinicName(), user::setClinicName);
 
-        String doctorId = request.getDoctorId() != null ? request.getDoctorId() : request.getAssignedDoctorId();
-        if (doctorId != null && !doctorId.isBlank()) {
-            user.setDoctor(findById(EnumParser.parseId(doctorId, "doctorId")));
+        if (hasText(request.getJoinCode()) || hasText(request.getDoctorRoomId())) {
+            throw new ForbiddenException("Doctor room codes are managed by the doctor room API");
+        }
+        if (hasText(request.getDoctorId()) || hasText(request.getAssignedDoctorId())) {
+            throw new ForbiddenException("Doctor connections must use doctor requests");
         }
 
         applyEmergencyContact(user, request);
@@ -114,9 +128,40 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserProfileDto> connectedPatients(Long doctorId) {
+        User doctor = findById(doctorId);
+        if (doctor.getRole() != Role.DOCTOR) {
+            throw new ForbiddenException("Only doctors can view connected patients");
+        }
         return userRepository.findByDoctor_Id(doctorId).stream()
                 .map(UserProfileDto::from)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ActivityDtos.DoctorRoomResponse> getDoctorRoom(Long doctorId) {
+        User doctor = doctorForRoomManagement(doctorId);
+        if (!hasText(doctor.getDoctorRoomId())) {
+            return Optional.empty();
+        }
+        return Optional.of(ActivityDtos.DoctorRoomResponse.from(doctor));
+    }
+
+    @Transactional
+    public ActivityDtos.DoctorRoomResponse createDoctorRoom(Long doctorId) {
+        User doctor = doctorForRoomManagement(doctorId);
+        if (!hasText(doctor.getDoctorRoomId())) {
+            doctor.setDoctorRoomId(generateUniqueRoomCode());
+        }
+        return ActivityDtos.DoctorRoomResponse.from(doctor);
+    }
+
+    @Transactional(readOnly = true)
+    public ActivityDtos.DoctorRoomResponse findDoctorRoom(String roomCode) {
+        String normalized = normalizeRoomCode(roomCode);
+        User doctor = userRepository.findByDoctorRoomId(normalized)
+                .filter(user -> user.getRole() == Role.DOCTOR)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor room not found"));
+        return ActivityDtos.DoctorRoomResponse.from(doctor);
     }
 
     private UserProfileDto doctorListDto(User user) {
@@ -130,6 +175,31 @@ public class UserService {
         dto.setClinicName(user.getClinicName());
         dto.setProfileCompleted(user.isProfileCompleted());
         return dto;
+    }
+
+    private User doctorForRoomManagement(Long doctorId) {
+        User doctor = findById(doctorId);
+        if (doctor.getRole() != Role.DOCTOR) {
+            throw new ForbiddenException("Only doctors can manage doctor rooms");
+        }
+        return doctor;
+    }
+
+    private String generateUniqueRoomCode() {
+        for (int attempt = 0; attempt < 20; attempt++) {
+            String code = String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
+            if (!userRepository.existsByDoctorRoomId(code)) {
+                return code;
+            }
+        }
+        throw new IllegalStateException("Unable to generate a unique doctor room code");
+    }
+
+    private String normalizeRoomCode(String roomCode) {
+        if (roomCode == null || !roomCode.matches("\\d{6}")) {
+            throw new IllegalArgumentException("Room code must be exactly 6 digits");
+        }
+        return roomCode;
     }
 
     private void applyEmergencyContact(User user, ProfileUpdateRequest request) {
@@ -243,5 +313,9 @@ public class UserService {
         if (value != null) {
             setter.accept(value);
         }
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }

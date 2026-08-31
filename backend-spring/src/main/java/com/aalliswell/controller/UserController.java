@@ -9,6 +9,7 @@ import com.aalliswell.service.CareService;
 import com.aalliswell.service.EnumParser;
 import com.aalliswell.service.UserService;
 import jakarta.validation.Valid;
+import java.util.Collections;
 import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -98,6 +100,12 @@ public class UserController {
         return new SuccessResponse(true, "Schedule item deleted");
     }
 
+    @DeleteMapping("/schedule")
+    public SuccessResponse clearSchedule() {
+        careService.clearSchedules(SecurityUtils.currentUserId());
+        return new SuccessResponse(true, "Schedule cleared");
+    }
+
     @GetMapping("/checkups")
     public Map<String, Object> checkups() {
         return Map.of("checkups", careService.checkups(SecurityUtils.currentUserId()));
@@ -115,9 +123,17 @@ public class UserController {
         return Map.of("success", true, "checkup", careService.requestAppointment(SecurityUtils.currentUserId(), request));
     }
 
+    @PatchMapping("/checkups/{id}/status")
+    public Map<String, Object> updateCheckupStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody ActivityDtos.CheckupStatusPatchRequest request
+    ) {
+        return Map.of("success", true, "checkup", careService.updateCheckupStatus(SecurityUtils.currentUserId(), id, request));
+    }
+
     @GetMapping("/reports")
-    public Map<String, Object> reports() {
-        return Map.of("reports", careService.reports(SecurityUtils.currentUserId()));
+    public Map<String, Object> reports(@RequestParam(required = false) String patientId) {
+        return Map.of("reports", careService.reports(SecurityUtils.currentUserId(), patientId));
     }
 
     @PostMapping("/reports")
@@ -189,6 +205,30 @@ public class UserController {
         return Map.of("doctors", userService.doctors());
     }
 
+    @GetMapping("/connected-patients")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public Map<String, Object> connectedPatients() {
+        return Map.of("patients", userService.connectedPatients(SecurityUtils.currentUserId()));
+    }
+
+    @GetMapping("/doctor-room")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public Map<String, Object> doctorRoom() {
+        return Collections.singletonMap("room", userService.getDoctorRoom(SecurityUtils.currentUserId()).orElse(null));
+    }
+
+    @PostMapping("/doctor-room")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public Map<String, Object> createDoctorRoom() {
+        return Map.of("success", true, "room", userService.createDoctorRoom(SecurityUtils.currentUserId()));
+    }
+
+    @GetMapping("/doctor-room/{roomCode}")
+    @PreAuthorize("hasAnyRole('MOTHER','PREGNANT')")
+    public Map<String, Object> findDoctorRoom(@PathVariable String roomCode) {
+        return Map.of("room", userService.findDoctorRoom(roomCode));
+    }
+
     @PostMapping("/doctor-request")
     @PreAuthorize("hasAnyRole('MOTHER','PREGNANT')")
     public Map<String, Object> sendDoctorRequest(@Valid @RequestBody ActivityDtos.DoctorRequestCreateRequest request) {
@@ -208,5 +248,47 @@ public class UserController {
             @Valid @RequestBody ActivityDtos.DoctorRequestPatchRequest request
     ) {
         return Map.of("success", true, "request", careService.respondToDoctorRequest(SecurityUtils.currentUserId(), id, request));
+    }
+
+    @GetMapping("/diet-progress")
+    public Map<String, Object> dietProgress() {
+        return Collections.singletonMap("progress", careService.latestDietPlanProgress(SecurityUtils.currentUserId()));
+    }
+
+    @PutMapping("/diet-progress")
+    @PreAuthorize("hasAnyRole('MOTHER','PREGNANT')")
+    public Map<String, Object> saveDietProgress(@Valid @RequestBody ActivityDtos.DietPlanProgressRequest request) {
+        return Map.of("success", true, "progress", careService.saveDietPlanProgress(SecurityUtils.currentUserId(), request));
+    }
+
+    @GetMapping("/food-intro")
+    @PreAuthorize("hasRole('MOTHER')")
+    public Map<String, Object> foodIntroHistory() {
+        return Map.of("entries", careService.foodIntroHistory(SecurityUtils.currentUserId()));
+    }
+
+    @PostMapping("/food-intro")
+    @PreAuthorize("hasRole('MOTHER')")
+    public Map<String, Object> addFoodIntroEntry(@Valid @RequestBody ActivityDtos.FoodIntroEntryRequest request) {
+        return Map.of("success", true, "entry", careService.addFoodIntroEntry(SecurityUtils.currentUserId(), request));
+    }
+
+    @DeleteMapping("/food-intro/{id}")
+    @PreAuthorize("hasRole('MOTHER')")
+    public SuccessResponse deleteFoodIntroEntry(@PathVariable Long id) {
+        careService.deleteFoodIntroEntry(SecurityUtils.currentUserId(), id);
+        return new SuccessResponse(true, "Food introduction entry deleted");
+    }
+
+    @GetMapping("/baby-diet-plan")
+    @PreAuthorize("hasRole('MOTHER')")
+    public Map<String, Object> babyDietPlan() {
+        return Collections.singletonMap("plan", careService.babyDietPlan(SecurityUtils.currentUserId()));
+    }
+
+    @PutMapping("/baby-diet-plan")
+    @PreAuthorize("hasRole('MOTHER')")
+    public Map<String, Object> saveBabyDietPlan(@Valid @RequestBody ActivityDtos.BabyDietPlanRequest request) {
+        return Map.of("success", true, "plan", careService.saveBabyDietPlan(SecurityUtils.currentUserId(), request));
     }
 }

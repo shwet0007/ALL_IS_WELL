@@ -6,6 +6,7 @@ import com.aalliswell.dto.auth.RegisterRequest;
 import com.aalliswell.dto.user.UserProfileDto;
 import com.aalliswell.entity.User;
 import com.aalliswell.enums.Role;
+import com.aalliswell.exception.DoctorRegistrationNotAllowedException;
 import com.aalliswell.exception.EmailAlreadyExistsException;
 import com.aalliswell.exception.InvalidCredentialsException;
 import com.aalliswell.repository.UserRepository;
@@ -40,6 +41,10 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String email = normalizeEmail(request.email());
+        Role requestedRole = EnumParser.parse(Role.class, request.role(), Role.PREGNANT);
+        if (requestedRole == Role.DOCTOR) {
+            throw new DoctorRegistrationNotAllowedException("Doctor accounts require verification or administrator approval.");
+        }
         if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyExistsException("Email is already registered");
         }
@@ -47,7 +52,7 @@ public class AuthService {
         User user = new User();
         user.setEmail(email);
         user.setName(resolveName(request.name(), email));
-        user.setRole(EnumParser.parse(Role.class, request.role(), Role.PREGNANT));
+        user.setRole(requestedRole);
         user.setPasswordHash(passwordEncoder.encode(request.password()));
 
         User saved = userRepository.save(user);

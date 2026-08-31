@@ -27,16 +27,7 @@ interface DoctorReportsProps {
 
 export default function DoctorReports({ patients }: DoctorReportsProps) {
     const [reports, setReports] = useState<MedicalReport[]>([]);
-    const [loading, setLoading] = useState(false); // Initially false, loads when patient selected or init?
-    // Actually we should fetch ALL reports for ALL connected patients? 
-    // Or maybe just show recent uploads?
-    // Let's fetch all reports for connected patients.
-
-    // Better approach: Since getMedicalReports takes a patientId, maybe we iterate connected patients?
-    // Or maybe we change getMedicalReports to fetch by doctor?
-    // For now, let's just let the doctor select a patient to view reports, OR show a flat list if possible.
-    // Given the structure, fetching per patient is easiest. Let's fetch all and combine.
-
+    const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -50,10 +41,7 @@ export default function DoctorReports({ patients }: DoctorReportsProps) {
 
             setLoading(true);
             try {
-                // Fetch reports for all connected patients in parallel
-                const promises = patients.map(p => getMedicalReports(p.id));
-                const results = await Promise.all(promises);
-                const allReports = results.flat().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                const allReports = await getMedicalReports();
                 setReports(allReports);
             } catch (error) {
                 console.error("Error fetching reports:", error);
@@ -78,7 +66,6 @@ export default function DoctorReports({ patients }: DoctorReportsProps) {
         }
     };
 
-    // Helper to get patient name if not in report (though it should be)
     const getPatientName = (id: string) => {
         return patients.find(p => p.id === id)?.name || 'Unknown Patient';
     };

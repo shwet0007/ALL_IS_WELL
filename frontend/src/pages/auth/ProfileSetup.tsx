@@ -46,13 +46,11 @@ export default function ProfileSetup() {
     const [otherConditions, setOtherConditions] = useState('');
 
     // Step 4: Role Specific
-    // Pregnant
     const [pregnancyStartDate, setPregnancyStartDate] = useState('');
     const [trimester, setTrimester] = useState('first');
     const [highRisk, setHighRisk] = useState(false);
     const [prevComplications, setPrevComplications] = useState('');
 
-    // Mother
     const [babyDob, setBabyDob] = useState('');
     const [babyName, setBabyName] = useState('');
     const [babyGender, setBabyGender] = useState('boy');
@@ -60,19 +58,11 @@ export default function ProfileSetup() {
     const [deliveryType, setDeliveryType] = useState('normal');
     const [birthWeight, setBirthWeight] = useState('');
     const [premature, setPremature] = useState(false);
-    // Removed basic feedingPreference from Step 4 as it moves to Step 6 detailed
-    // But keeping it in state if we want to default it? actually let's move it to Step 6 fully.
-    // For now, I'll keep the variable but maybe hide the input in step 4 if I move it to step 6?
-    // The requirement says "Baby Feeding Preferences" in Step 6.
-    // So I will remove "Feeding Preference" from Step 4 UI and move to Step 6 state.
-
-    // Step 4 Mother Fields kept:
-    const [babyAllergies, setBabyAllergies] = useState(''); // Medical allergies
+    const [babyAllergies, setBabyAllergies] = useState('');
     const [babyHealthConditions, setBabyHealthConditions] = useState('');
     const [pediatricianName, setPediatricianName] = useState('');
     const [pediatricianContact, setPediatricianContact] = useState('');
 
-    // Doctor
     const [specialization, setSpecialization] = useState('');
     const [clinicName, setClinicName] = useState('');
 
@@ -82,16 +72,24 @@ export default function ProfileSetup() {
 
     // Step 6: Diet (Mother & Pregnant)
     const [dietType, setDietType] = useState('veg');
-    const [allergies, setAllergies] = useState(''); // Food allergies
+    const [allergies, setAllergies] = useState('');
     const [restrictions, setRestrictions] = useState<string[]>([]);
     const [mealPattern, setMealPattern] = useState('3-meals');
     const [waterIntake, setWaterIntake] = useState('2-3L');
 
     // Step 6: Baby Feeding (Mother Only)
     const [babyFeedingType, setBabyFeedingType] = useState('breast');
-    const [solidFoodStarted, setSolidFoodStarted] = useState('no'); // UI radio needs string usually for simpler handling, convert to bool on submit
+    const [solidFoodStarted, setSolidFoodStarted] = useState('no');
     const [weaningStyle, setWeaningStyle] = useState('traditional');
-    const [babyDietAllergies, setBabyDietAllergies] = useState(''); // Specific food allergies for baby
+    const [babyDietAllergies, setBabyDietAllergies] = useState('');
+
+    const canCompleteDoctorProfile = userProfile?.role === 'doctor';
+    const roleOptions = canCompleteDoctorProfile
+        ? [{ id: 'doctor', icon: Stethoscope, label: 'Doctor' }]
+        : [
+            { id: 'pregnant', icon: User, label: 'Pregnant Woman' },
+            { id: 'mother', icon: Baby, label: 'New Mother' }
+        ];
 
     const totalSteps = role === 'doctor' ? 5 : 6;
 
@@ -100,6 +98,14 @@ export default function ProfileSetup() {
             navigate('/', { replace: true });
         }
     }, [userProfile, navigate]);
+
+    useEffect(() => {
+        if (canCompleteDoctorProfile) {
+            setRole('doctor');
+        } else if (role === 'doctor') {
+            setRole('pregnant');
+        }
+    }, [canCompleteDoctorProfile, role]);
 
     const handleNext = () => {
         // Basic validation before next
@@ -146,7 +152,6 @@ export default function ProfileSetup() {
                 }
             };
 
-            // Construct nested dietPreferences
             if (role !== 'doctor') {
                 profileData.dietPreferences = {
                     mother: {
@@ -167,15 +172,10 @@ export default function ProfileSetup() {
                     };
                 }
             } else {
-                // Doctor: save basic diet/allergies to lifestyle if needed, or omit if not applicable?
-                // Original Step 5 for doctor had diet/allergies. Let's keep them in lifestyle for doctor?
-                // The prompt implies Diet Prefs is mainly for Mother/Pregnant. 
-                // I will skip dietPreferences for Doctor and just keep lifestyle basics if they were set.
                 profileData.lifestyle.diet = dietType; // reuse state
                 profileData.lifestyle.allergies = allergies;
             }
 
-            // Add role-specific fields
             if (role === 'pregnant') {
                 profileData.pregnancyStartDate = pregnancyStartDate;
                 profileData.trimester = trimester;
@@ -190,13 +190,9 @@ export default function ProfileSetup() {
                 profileData.birthWeight = birthWeight;
                 profileData.premature = premature;
 
-                // feedingPreference removed from here as it's in dietPreferences.baby now?
-                // Actually the backend User model *also* has `feedingPreference` in the root (legacy from my first pass).
-                // I should probably populate it too for backward comp or ease of access, or just rely on dietPreferences.
-                // Let's populate the root one too if it exists in schema.
                 profileData.feedingPreference = babyFeedingType as any;
 
-                profileData.babyAllergies = babyAllergies; // Medical
+                profileData.babyAllergies = babyAllergies;
                 profileData.babyHealthConditions = babyHealthConditions;
                 profileData.pediatricianName = pediatricianName;
                 profileData.pediatricianContact = pediatricianContact;
@@ -224,7 +220,7 @@ export default function ProfileSetup() {
             }
         } catch (err: any) {
             console.error(err);
-            setError('Failed to save profile. Please try again.');
+            setError(err?.message || 'Failed to save profile. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -280,12 +276,12 @@ export default function ProfileSetup() {
                             <div className="space-y-6 animate-slide-up">
                                 <div className="space-y-3">
                                     <Label className="text-base font-medium">I am a...</Label>
-                                    <RadioGroup value={role} onValueChange={(val: any) => setRole(val)} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        {[
-                                            { id: 'pregnant', icon: User, label: 'Pregnant Woman' },
-                                            { id: 'mother', icon: Baby, label: 'New Mother' },
-                                            { id: 'doctor', icon: Stethoscope, label: 'Doctor' }
-                                        ].map((item) => (
+                                    <RadioGroup
+                                        value={role}
+                                        onValueChange={(val: any) => setRole(val)}
+                                        className={`grid grid-cols-1 ${canCompleteDoctorProfile ? '' : 'md:grid-cols-2'} gap-4`}
+                                    >
+                                        {roleOptions.map((item) => (
                                             <div key={item.id}>
                                                 <RadioGroupItem value={item.id} id={item.id} className="peer sr-only" />
                                                 <Label htmlFor={item.id} className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary cursor-pointer transition-all shadow-sm">

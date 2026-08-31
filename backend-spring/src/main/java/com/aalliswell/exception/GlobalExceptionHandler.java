@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, null);
     }
 
-    @ExceptionHandler({ForbiddenException.class, AccessDeniedException.class})
+    @ExceptionHandler({ForbiddenException.class, AccessDeniedException.class, DoctorRegistrationNotAllowedException.class})
     public ResponseEntity<ApiError> handleForbidden(RuntimeException ex, HttpServletRequest request) {
         return build(HttpStatus.FORBIDDEN, ex.getMessage(), request, null);
     }

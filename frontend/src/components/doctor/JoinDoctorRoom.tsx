@@ -29,14 +29,12 @@ export default function JoinDoctorRoom() {
         setLoading(true);
 
         try {
-            // Validate room code format
             if (roomCode.length !== 6 || !/^\d+$/.test(roomCode)) {
                 setError('Room code must be exactly 6 digits');
                 setLoading(false);
                 return;
             }
 
-            // Check if already connected
             const alreadyConnected = await isPatientConnected(currentUser.uid);
             if (alreadyConnected) {
                 setError('You are already connected to a doctor. Please contact support to change doctors.');
@@ -44,7 +42,6 @@ export default function JoinDoctorRoom() {
                 return;
             }
 
-            // Find doctor by room code
             const doctorRoom = await findDoctorByRoomCode(roomCode);
             if (!doctorRoom) {
                 setError('Invalid room code. Please check the code and try again.');
@@ -52,24 +49,21 @@ export default function JoinDoctorRoom() {
                 return;
             }
 
-            // Join the doctor room
             await joinDoctorRoom(currentUser.uid, doctorRoom.doctorId, doctorRoom.doctorName);
 
-            // Refresh profile to get updated data
             await refreshProfile();
 
             setSuccess(true);
             setDoctorName(doctorRoom.doctorName);
             setRoomCode('');
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error joining doctor room:', err);
-            setError('Failed to join doctor room. Please try again.');
+            setError(err?.message || 'Failed to send doctor request. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
-    // If already connected, show connected doctor info
     if (userProfile?.doctorId && userProfile?.doctorName) {
         return (
             <Card className="border-green-200 bg-green-50/30">
@@ -110,7 +104,7 @@ export default function JoinDoctorRoom() {
                     <Alert className="mb-4 border-green-200 bg-green-50">
                         <CheckCircle2 className="w-4 h-4 text-green-600" />
                         <AlertDescription className="text-green-900">
-                            Successfully connected to Dr. {doctorName}! You can now access personalized care.
+                            Connection request sent to Dr. {doctorName}. You will be connected after approval.
                         </AlertDescription>
                     </Alert>
                 )}
@@ -147,12 +141,12 @@ export default function JoinDoctorRoom() {
                         {loading ? (
                             <>
                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                Connecting...
+                                Sending request...
                             </>
                         ) : (
                             <>
                                 <UserPlus className="w-4 h-4" />
-                                Join Doctor Room
+                                Send Request
                             </>
                         )}
                     </Button>

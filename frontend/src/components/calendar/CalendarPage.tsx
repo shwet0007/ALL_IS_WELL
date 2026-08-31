@@ -154,7 +154,6 @@ const CalendarPage = () => {
                     </CardContent>
                 </Card>
 
-                {/* Desktop Side Panel (Visible effectively as Sheet on Mobile, but this is a placeholder/summary area) */}
                 <div className="hidden md:block space-y-4">
                     <div className="bg-secondary/20 p-6 rounded-xl border border-secondary/30">
                         <h3 className="font-semibold text-lg mb-2">{format(selectedDate, 'MMM d, yyyy')}</h3>

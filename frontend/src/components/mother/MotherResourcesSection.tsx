@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-    PregnancyResource,
-    toggleResourceBookmark,
-    getSavedResources
-} from '@/lib/db';
+import { PregnancyResource } from '@/lib/db';
 import { useAuth } from '@/contexts/AuthContext';
 import ResourceCard from '@/components/resources/ResourceCard';
 import ResourceDetailDialog from '@/components/resources/ResourceDetailDialog';
@@ -23,12 +19,11 @@ import {
 import { toast } from 'sonner';
 import { MOCK_MOTHER_RESOURCES } from '@/data/mockMotherResources';
 import { cn } from '@/lib/utils';
-import { Card, CardContent } from "@/components/ui/card";
 
 const categories = ['All', 'Recovery', 'Baby Nutrition', 'Sleep & Routines', 'Growth & Development', 'Mental Wellness', 'Safety & First Aid'];
 
 const MotherResourcesSection = () => {
-    const { currentUser, userProfile } = useAuth();
+    const { userProfile } = useAuth();
     const [resources, setResources] = useState<PregnancyResource[]>([]);
     const [savedResourceIds, setSavedResourceIds] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
@@ -36,16 +31,13 @@ const MotherResourcesSection = () => {
     const [showSavedOnly, setShowSavedOnly] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Dialog State
     const [selectedResource, setSelectedResource] = useState<PregnancyResource | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    // Mock Personalization (Real app would calc from DOB)
     const babyAge = "2 months";
     const recoveryStage = "Postpartum Recovery";
 
     useEffect(() => {
-        // Simulate API load
         const loadData = async () => {
             setLoading(true);
             try {
@@ -82,7 +74,7 @@ const MotherResourcesSection = () => {
         return matchesCategory && matchesSaved && matchesSearch;
     });
 
-    const recommendedResources = resources.slice(0, 4); // Mock recommendation logic
+    const recommendedResources = resources.slice(0, 4);
 
     if (loading) {
         return (

@@ -11,7 +11,7 @@ React + TypeScript
   -> Python RAG service and Python cry-analysis service
 ```
 
-Firebase is kept only for client SDK features that still need it, such as Storage and Cloud Messaging/device tokens. Application login is handled by Spring Boot JWT endpoints.
+Firebase Auth is not used. Application login is handled by Spring Boot JWT endpoints. Firebase remains only for client SDK features that still need it, such as Storage and Cloud Messaging/device tokens, and the Spring backend sends FCM pushes through the Firebase Admin Java SDK.
 
 ## Features
 
@@ -56,7 +56,7 @@ JWT_SECRET=replace-with-at-least-32-random-characters
 VITE_API_URL=http://localhost:3001
 ```
 
-Set `GROQ_API_KEY`, `SARVAM_API_KEY`, `TWILIO_*`, and `FCM_SERVER_KEY` only for features you run locally.
+Set `GROQ_API_KEY`, `SARVAM_API_KEY`, `TWILIO_*`, and Firebase Admin values only for features you run locally. For push notifications, set `FIREBASE_ADMIN_ENABLED=true` and provide `FIREBASE_CREDENTIALS_PATH` or Application Default Credentials; optionally set `FIREBASE_PROJECT_ID`.
 
 The frontend also has `frontend/.env.example` for Vite and Firebase client SDK values used by Storage/Cloud Messaging.
 

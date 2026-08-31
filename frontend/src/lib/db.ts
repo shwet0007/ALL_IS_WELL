@@ -80,15 +80,9 @@ export interface UserProfile {
     createdAt?: any;
 }
 
-export const generateJoinCode = (name: string) => {
-    const cleanName = name.replace(/[^a-zA-Z]/g, '').toUpperCase().substring(0, 4);
-    const random = Math.floor(1000 + Math.random() * 9000);
-    return `DR-${cleanName}-${random}`;
-};
-
 export const createUserProfile = async (userId: string, data: Omit<UserProfile, 'profileCompleted' | 'createdAt'>) => {
     try {
-        const response = await api.put('/users/profile', data);
+        await api.put('/users/profile', data);
         return true;
     } catch (error) {
         console.error('Error creating user profile:', error);
@@ -116,10 +110,14 @@ export const getPublicProfile = async (userId: string) => {
     }
 };
 
-export const getConnectedPatients = async (doctorId: string) => {
-    // This needs a specific backend route or filter. For now returning empty.
-    // In a real app, the backend would filter users where doctorId == current user.
-    return [];
+export const getConnectedPatients = async (_doctorId?: string): Promise<UserProfile[]> => {
+    try {
+        const response = await api.get('/users/connected-patients');
+        return response.patients || [];
+    } catch (error) {
+        console.error('Error fetching connected patients:', error);
+        return [];
+    }
 };
 
 export const updateUserProfile = async (userId: string, data: Partial<UserProfile>) => {
@@ -198,19 +196,40 @@ export const deleteScheduleItem = async (userId: string, itemId: string) => {
 };
 
 export const clearSchedule = async (userId: string) => {
-    // Not explicitly implemented in backend yet, could be a loop or batch delete
-    return true;
+    try {
+        await api.delete('/users/schedule');
+        return true;
+    } catch (error) {
+        console.error('Error clearing schedule:', error);
+        throw error;
+    }
 };
 
 // --- Diet Plan Services ---
-export const saveDietPlanProgress = async (userId: string, date: string, sections: any[]) => {
-    // Placeholder until diet progress has a dedicated Spring endpoint.
-    return true;
+export interface DietPlanProgress {
+    date: string;
+    sections: any[];
 }
 
-export const getDietPlanProgress = async (userId: string) => {
-    return null;
-}
+export const saveDietPlanProgress = async (userId: string, date: string, sections: any[]) => {
+    try {
+        const response = await api.put('/users/diet-progress', { date, sections });
+        return response.progress;
+    } catch (error) {
+        console.error('Error saving diet plan progress:', error);
+        throw error;
+    }
+};
+
+export const getDietPlanProgress = async (userId: string): Promise<DietPlanProgress | null> => {
+    try {
+        const response = await api.get('/users/diet-progress');
+        return response.progress || null;
+    } catch (error) {
+        console.error('Error fetching diet plan progress:', error);
+        return null;
+    }
+};
 
 // --- Checkup Services ---
 export interface Checkup {
@@ -266,26 +285,46 @@ export const getDoctorCheckups = async (doctorId: string) => {
 };
 
 export const updateCheckupStatus = async (checkupId: string, status: 'scheduled' | 'completed' | 'cancelled') => {
-    // Needs backend put/patch route for checkup status
-    return true;
+    try {
+        const response = await api.patch(`/users/checkups/${checkupId}/status`, { status });
+        return response.checkup;
+    } catch (error) {
+        console.error('Error updating checkup status:', error);
+        throw error;
+    }
 };
 
 // --- Doctor Room Functions ---
-export const createDoctorRoom = async (doctorId: string, doctorName: string): Promise<string> => {
-    return "000000"; // Placeholder, real implementation should use backend
+export interface DoctorRoom {
+    roomCode: string;
+    doctorId: string;
+    doctorName: string;
+}
+
+export const createDoctorRoom = async (_doctorId?: string, _doctorName?: string): Promise<string> => {
+    const response = await api.post('/users/doctor-room', {});
+    return response.room.roomCode;
 };
 
-export const getDoctorRoom = async (doctorId: string) => {
-    return null;
+export const getDoctorRoom = async (_doctorId?: string): Promise<DoctorRoom | null> => {
+    const response = await api.get('/users/doctor-room');
+    return response.room || null;
 };
 
-export const findDoctorByRoomCode = async (roomCode: string) => {
-    return null;
-};
-
-export const joinDoctorRoom = async (patientId: string, doctorId: string, doctorName: string) => {
+export const findDoctorByRoomCode = async (roomCode: string): Promise<DoctorRoom | null> => {
     try {
-        await api.put('/users/profile', { doctorId, doctorName });
+        const response = await api.get(`/users/doctor-room/${encodeURIComponent(roomCode)}`);
+        return response.room || null;
+    } catch (error) {
+        console.error('Error finding doctor room:', error);
+        return null;
+    }
+};
+
+export const joinDoctorRoom = async (_patientId: string, doctorId: string, _doctorName: string) => {
+    try {
+        const response = await api.post('/users/doctor-request', { doctorId });
+        return response.request;
     } catch (error) {
         console.error('Error joining doctor room:', error);
         throw error;
@@ -327,9 +366,10 @@ export const addMedicalReport = async (report: Omit<MedicalReport, 'id'>) => {
     }
 };
 
-export const getMedicalReports = async (patientId: string) => {
+export const getMedicalReports = async (patientId?: string) => {
     try {
-        const response = await api.get('/users/reports');
+        const query = patientId ? `?patientId=${encodeURIComponent(patientId)}` : '';
+        const response = await api.get(`/users/reports${query}`);
         return response.reports;
     } catch (error) {
         console.error('Error fetching medical reports:', error);
@@ -370,42 +410,71 @@ export interface PregnancyResource {
     isLocked?: boolean;
 }
 
-export const getPregnancyResources = async () => {
-    return []; // Placeholder
-};
-
-export const toggleResourceBookmark = async (userId: string, resourceId: string, isBookmarked: boolean) => {
-    return true; // Placeholder
-};
-
-export const getSavedResources = async (userId: string) => {
-    return []; // Placeholder
-};
-
-export const seedResources = async () => {
-    return; // Placeholder
-};
-
 // --- Food Tracker ---
-export const addFoodIntroEntry = async (userId: string, entry: any) => {
-    return { id: 'temp' }; // Placeholder
+export interface FoodIntroEntry {
+    id: string;
+    foodName: string;
+    introductionDate: string;
+    reaction: 'good' | 'bad' | 'gas' | 'constipation' | 'allergy' | 'rash';
+    notes?: string;
+}
+
+export const addFoodIntroEntry = async (userId: string, entry: Omit<FoodIntroEntry, 'id'>) => {
+    try {
+        const response = await api.post('/users/food-intro', entry);
+        return response.entry;
+    } catch (error) {
+        console.error('Error adding food introduction entry:', error);
+        throw error;
+    }
 };
 
-export const getFoodIntroHistory = async (userId: string) => {
-    return []; // Placeholder
+export const getFoodIntroHistory = async (userId: string): Promise<FoodIntroEntry[]> => {
+    try {
+        const response = await api.get('/users/food-intro');
+        return response.entries || [];
+    } catch (error) {
+        console.error('Error fetching food introduction history:', error);
+        return [];
+    }
 };
 
 export const deleteFoodIntroEntry = async (userId: string, entryId: string) => {
-    return true; // Placeholder
+    try {
+        await api.delete(`/users/food-intro/${entryId}`);
+        return true;
+    } catch (error) {
+        console.error('Error deleting food introduction entry:', error);
+        throw error;
+    }
 };
 
 // --- Baby Diet ---
-export const saveBabyDietPlan = async (userId: string, planData: any) => {
-    return true; // Placeholder
+export interface BabyDietPlanDoc {
+    id?: string;
+    plan: string;
+    generatedAt: Date | string;
+    babyAgeWeeks: number;
+}
+
+export const saveBabyDietPlan = async (userId: string, planData: BabyDietPlanDoc) => {
+    try {
+        const response = await api.put('/users/baby-diet-plan', planData);
+        return response.plan;
+    } catch (error) {
+        console.error('Error saving baby diet plan:', error);
+        throw error;
+    }
 };
 
-export const getBabyDietPlan = async (userId: string) => {
-    return null; // Placeholder
+export const getBabyDietPlan = async (userId: string): Promise<BabyDietPlanDoc | null> => {
+    try {
+        const response = await api.get('/users/baby-diet-plan');
+        return response.plan || null;
+    } catch (error) {
+        console.error('Error fetching baby diet plan:', error);
+        return null;
+    }
 };
 
 // --- Daily Health Check-In Services ---

@@ -6,19 +6,26 @@ import com.aalliswell.entity.Checkup;
 import com.aalliswell.entity.CryLog;
 import com.aalliswell.entity.DailyCheckup;
 import com.aalliswell.entity.DailyTask;
+import com.aalliswell.entity.DietPlanProgress;
 import com.aalliswell.entity.DiaryEntry;
 import com.aalliswell.entity.DoctorNote;
 import com.aalliswell.entity.DoctorRequest;
+import com.aalliswell.entity.FoodIntroEntry;
 import com.aalliswell.entity.MedicalReport;
 import com.aalliswell.entity.MonthlyReport;
 import com.aalliswell.entity.Notification;
 import com.aalliswell.entity.Product;
 import com.aalliswell.entity.Reminder;
 import com.aalliswell.entity.Schedule;
+import com.aalliswell.entity.User;
+import com.aalliswell.entity.BabyDietPlan;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -282,6 +289,13 @@ public final class ActivityDtos {
 
     @Getter
     @Setter
+    public static class CheckupStatusPatchRequest {
+        @NotBlank
+        private String status;
+    }
+
+    @Getter
+    @Setter
     public static class MedicalReportRequest {
         @NotBlank
         private String date;
@@ -381,6 +395,16 @@ public final class ActivityDtos {
         }
     }
 
+    public record DoctorRoomResponse(String roomCode, String doctorId, String doctorName) {
+        public static DoctorRoomResponse from(User doctor) {
+            return new DoctorRoomResponse(
+                    doctor.getDoctorRoomId(),
+                    String.valueOf(doctor.getId()),
+                    doctor.getName()
+            );
+        }
+    }
+
     @Getter
     @Setter
     public static class CalendarItemRequest {
@@ -456,6 +480,79 @@ public final class ActivityDtos {
             dto.companyName = product.getCompanyName();
             dto.externalLink = product.getExternalLink();
             return dto;
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class DietPlanProgressRequest {
+        @NotBlank
+        private String date;
+
+        @NotNull
+        private List<Map<String, Object>> sections;
+    }
+
+    public record DietPlanProgressResponse(String date, List<Map<String, Object>> sections) {
+        public static DietPlanProgressResponse from(DietPlanProgress progress, List<Map<String, Object>> sections) {
+            return new DietPlanProgressResponse(progress.getDate(), sections);
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class FoodIntroEntryRequest {
+        @NotBlank
+        private String foodName;
+
+        @NotBlank
+        private String introductionDate;
+
+        @NotBlank
+        private String reaction;
+
+        private String notes;
+    }
+
+    public record FoodIntroEntryResponse(
+            Long id,
+            String foodName,
+            String introductionDate,
+            String reaction,
+            String notes
+    ) {
+        public static FoodIntroEntryResponse from(FoodIntroEntry entry) {
+            return new FoodIntroEntryResponse(
+                    entry.getId(),
+                    entry.getFoodName(),
+                    entry.getIntroductionDate(),
+                    entry.getReaction(),
+                    entry.getNotes()
+            );
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class BabyDietPlanRequest {
+        @NotBlank
+        private String plan;
+
+        @NotNull
+        @Min(0)
+        private Integer babyAgeWeeks;
+
+        private Instant generatedAt;
+    }
+
+    public record BabyDietPlanResponse(Long id, String plan, Instant generatedAt, Integer babyAgeWeeks) {
+        public static BabyDietPlanResponse from(BabyDietPlan plan) {
+            return new BabyDietPlanResponse(
+                    plan.getId(),
+                    plan.getPlan(),
+                    plan.getGeneratedAt(),
+                    plan.getBabyAgeWeeks()
+            );
         }
     }
 

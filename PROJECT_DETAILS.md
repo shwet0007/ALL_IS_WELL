@@ -132,7 +132,7 @@ npm run build
 
 ## Runtime Configuration
 
-The Spring backend reads database, JWT, CORS, AI, Twilio, and FCM configuration from environment variables. See `.env.example` and `backend-spring/.env.example`.
+The Spring backend reads database, JWT, CORS, AI, Twilio, and Firebase Admin FCM configuration from environment variables. Firebase Auth is not used. See `.env.example` and `backend-spring/.env.example`.
 
 The frontend points to the Spring backend with:
 
