@@ -44,6 +44,6 @@ public class Notification extends AuditableEntity {
     @Column(nullable = false)
     private String sourceId;
 
-    @Column(nullable = false)
+    @Column(name = "is_read", nullable = false)
     private boolean read;
 }
